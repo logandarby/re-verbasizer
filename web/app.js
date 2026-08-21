@@ -5,6 +5,12 @@ import {
   listWorks,
   pickRandomWork,
 } from "./text-sources.js";
+import {
+  buildShareUrl,
+  decodeShareState,
+  encodeShareState,
+  readShareToken,
+} from "./share.mjs";
 
 const elements = {
   status: document.querySelector("#dictionary-status"),
@@ -23,6 +29,7 @@ const elements = {
   historyLabel: document.querySelector("#history-label"),
   historyList: document.querySelector("#history-list"),
   copy: document.querySelector("#copy-button"),
+  share: document.querySelector("#share-button"),
   placeholder: document.querySelector("#result-placeholder"),
   output: document.querySelector("#output"),
   sourceLibrary: document.querySelector("#source-library"),
@@ -64,6 +71,8 @@ function updateInputs() {
   elements.referenceCount.textContent = formatCount(referenceWords);
   elements.generate.disabled =
     !grammarReady || !scrambleWords || !referenceWords;
+  elements.share.disabled =
+    !latestOutput || !scrambleWords || !referenceWords;
 }
 
 function setLoading(isLoading) {
@@ -214,10 +223,73 @@ function showResult(message) {
   renderHistory();
   elements.placeholder.hidden = true;
   elements.output.hidden = false;
-  elements.again.disabled = false;
-  elements.copy.disabled = false;
+  enableOutputActions();
   setLoading(false);
   elements.output.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function enableOutputActions() {
+  elements.again.disabled = false;
+  elements.copy.disabled = false;
+  elements.share.disabled =
+    !latestOutput ||
+    !wordCount(elements.scramble.value) ||
+    !wordCount(elements.reference.value);
+}
+
+function displaySharedOutput(output) {
+  latestOutput = output;
+  latestTokens = [{ type: "separator", value: output }];
+  renderOutput(latestTokens);
+  elements.placeholder.hidden = true;
+  elements.output.hidden = false;
+  enableOutputActions();
+}
+
+async function copyShareLink() {
+  try {
+    const token = await encodeShareState({
+      scramble: elements.scramble.value,
+      reference: elements.reference.value,
+      output: latestOutput,
+    });
+    const url = buildShareUrl(window.location, token);
+    await navigator.clipboard.writeText(url);
+    try {
+      history.replaceState(null, "", url);
+    } catch {
+      // Some browsers reject very long address-bar URLs; the clipboard still has the link.
+    }
+    elements.share.textContent = "Copied";
+    window.setTimeout(() => {
+      elements.share.textContent = "Copy link";
+    }, 1400);
+  } catch {
+    elements.share.textContent = "Copy failed";
+  }
+}
+
+async function restoreSharedLink() {
+  const token = readShareToken(window.location);
+  if (!token) {
+    return;
+  }
+
+  try {
+    const state = await decodeShareState(token);
+    if (!state) {
+      elements.placeholder.hidden = false;
+      elements.placeholder.textContent = "Could not open this shared link.";
+      return;
+    }
+    elements.scramble.value = state.scramble;
+    elements.reference.value = state.reference;
+    displaySharedOutput(state.output);
+    updateInputs();
+  } catch {
+    elements.placeholder.hidden = false;
+    elements.placeholder.textContent = "Could not open this shared link.";
+  }
 }
 
 function selectedWork() {
@@ -428,6 +500,10 @@ elements.copy.addEventListener("click", () => {
   copyText(latestOutput, elements.copy, "Copy");
 });
 
+elements.share.addEventListener("click", () => {
+  copyShareLink();
+});
+
 elements.sourceLibrary.addEventListener("change", populateCategories);
 elements.sourceCategory.addEventListener("change", populateWorks);
 elements.loadButtons.forEach((button) => {
@@ -437,5 +513,14 @@ elements.loadButtons.forEach((button) => {
 });
 elements.surpriseSource.addEventListener("click", surpriseExcerpt);
 
+document.querySelector(".about-link").addEventListener("click", (event) => {
+  if (!readShareToken(window.location)) {
+    return;
+  }
+  event.preventDefault();
+  document.querySelector("#about").scrollIntoView({ behavior: "smooth" });
+});
+
 updateInputs();
 initSourcePanel();
+restoreSharedLink();
