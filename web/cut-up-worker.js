@@ -14,6 +14,11 @@ nlp.plugin({
     ObjectPronoun: { isA: "Pronoun" },
     PossessivePronoun: { isA: "Pronoun" },
     Quantifier: { isA: "Determiner" },
+    // Compromise never tags we/they/you/these/those as #Plural, but they
+    // take plural agreement ("you are", "these are"). A private tag keeps
+    // Pronoun/Determiner intact - tagging them #Plural would turn them into
+    // nouns and open those slots.
+    PluralAgree: {},
   },
   words: {
     above: "Preposition", below: "Preposition", under: "Preposition",
@@ -33,6 +38,10 @@ nlp.plugin({
 
     me: "ObjectPronoun", him: "ObjectPronoun", them: "ObjectPronoun",
     us: "ObjectPronoun",
+
+    we: ["Pronoun", "PluralAgree"], they: ["Pronoun", "PluralAgree"],
+    you: ["Pronoun", "PluralAgree"],
+    these: ["Determiner", "PluralAgree"], those: ["Determiner", "PluralAgree"],
 
     my: "PossessivePronoun", your: "PossessivePronoun", his: "PossessivePronoun",
     her: "PossessivePronoun", its: "PossessivePronoun", our: "PossessivePronoun",
@@ -58,14 +67,6 @@ const SLOT_FALLBACKS = {
   adjective: ["adjective"],
   adverb: ["adverb"],
 };
-const BE_FORMS = /^(?:am|is|are|was|were|be|been|being)$/i;
-const HAVE_FORMS = /^(?:have|has|had|having)$/i;
-const DO_FORMS = /^(?:do|does|did|doing)$/i;
-const BE_TABLE = {
-  present: { I: "am", singular: "is", plural: "are" },
-  past: { I: "was", singular: "was", plural: "were" },
-};
-const PLURAL_PRONOUNS = new Set(["we", "they", "you", "these", "those"]);
 const isolatedCache = new Map();
 const adverbFrameCache = new Map();
 const verbLemmaCache = new Map();
@@ -73,6 +74,7 @@ const conjugateCache = new Map();
 const nounLemmaCache = new Map();
 const inflectNounCache = new Map();
 const inflectAdjectiveCache = new Map();
+const infinitiveCache = new Map();
 let analyzeCache = { scramble: "", reference: "", preserveLines: false, tokens: null, buckets: null };
 
 function normalizeInput(text, preserveLines) {
@@ -141,7 +143,7 @@ function analyze(text) {
         normal: term.normal,
         slot,
         closed: !isOpenSlot(slot),
-        plural: term.tags.has("Plural"),
+        plural: term.tags.has("Plural") || term.tags.has("PluralAgree"),
         possessive: term.tags.has("Possessive") && !term.tags.has("Pronoun"),
         comparative: term.tags.has("Comparative"),
         superlative: term.tags.has("Superlative"),
@@ -261,7 +263,7 @@ function retagVerbAfterAuxiliary(tokens) {
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (token.type !== "word") continue;
-    if (token.slot !== "modal" && token.normal !== "to" && !DO_FORMS.test(token.normal)) continue;
+    if (token.slot !== "modal" && token.normal !== "to" && !isDoSupport(token.normal)) continue;
     const nextIndex = nextContentIndex(tokens, index, ["negative", "adverb"]);
     if (nextIndex === -1) continue;
     const next = tokens[nextIndex];
@@ -354,6 +356,75 @@ function conjugateVerb(lemma) {
   const forms = nlp(key).verbs().conjugate()[0] || null;
   conjugateCache.set(key, forms);
   return forms;
+}
+
+// String-level conjugation, bypassing the lexicon plugin. Tagging "had" or
+// "did" as Auxiliary makes nlp(word).verbs().conjugate() treat them as
+// infinitives and invent "hads" / "dids".
+function verbTransform() {
+  return nlp.methods().two.transform.verb;
+}
+
+function infinitiveOf(word) {
+  const key = String(word || "").toLowerCase();
+  if (infinitiveCache.has(key)) return infinitiveCache.get(key);
+
+  const model = nlp.model();
+  const { toInfinitive, conjugate } = verbTransform();
+  let lemma = toInfinitive(key, model) || key;
+
+  if (lemma === key) {
+    for (const tense of ["PastTense", "Gerund", "Participle", "PresentTense"]) {
+      const candidate = toInfinitive(key, model, tense);
+      if (!candidate || candidate === key) continue;
+      const forms = conjugate(candidate, model);
+      if (Object.values(forms).some((form) => form === key)) {
+        lemma = candidate;
+        break;
+      }
+    }
+  }
+
+  infinitiveCache.set(key, lemma);
+  return lemma;
+}
+
+function auxForms(lemma) {
+  return verbTransform().conjugate(lemma, nlp.model());
+}
+
+function isDoSupport(word) {
+  const key = String(word || "").toLowerCase();
+  if (infinitiveOf(key) !== "do") return false;
+  return key !== (auxForms("do").Participle || "done").toLowerCase();
+}
+
+function isNonFiniteAux(word) {
+  const key = String(word || "").toLowerCase();
+  const lemma = infinitiveOf(key);
+  const forms = auxForms(lemma);
+  if (key === (forms.Gerund || "").toLowerCase()) return true;
+  if (key === (forms.Participle || "").toLowerCase()) return true;
+  return lemma === "be" && key === "been";
+}
+
+// Compromise's conjugate("be") only has is/was. toPresent(is) and toPast(are)
+// supply are/were. First-person present "am" is not in the model at all.
+function inflectBe(tense, person) {
+  const model = nlp.model();
+  const forms = auxForms("be");
+  if (tense === "present") {
+    if (person === "I") return "am";
+    if (person === "plural") {
+      return model.two.models.toPresent.ex[forms.PresentTense] || "are";
+    }
+    return forms.PresentTense || "is";
+  }
+  if (person === "plural") {
+    const pluralPresent = model.two.models.toPresent.ex[forms.PresentTense];
+    return (pluralPresent && model.two.models.toPast.ex[pluralPresent]) || "were";
+  }
+  return forms.PastTense || "was";
 }
 
 function nounLemma(word) {
@@ -627,12 +698,18 @@ function contextualVerbForm(tokens, index, fallbackForm) {
     }
     if (token.normal === "to" || token.slot === "modal") return "infinitive";
     if (token.slot === "negative" || token.slot === "adverb") continue;
-    if (token.slot === "copula" && !/^(?:be|being)$/i.test(token.normal)) {
-      return "participle";
+    if (token.slot === "copula") {
+      const forms = auxForms(infinitiveOf(token.normal));
+      const form = token.normal;
+      if (form !== (forms.Infinitive || "").toLowerCase()
+        && form !== (forms.Gerund || "").toLowerCase()) {
+        return "participle";
+      }
     }
     if (token.slot === "auxiliary") {
-      if (HAVE_FORMS.test(token.normal)) return "participle";
-      if (DO_FORMS.test(token.normal)) return "infinitive";
+      const lemma = infinitiveOf(token.normal);
+      if (lemma === "have") return "participle";
+      if (lemma === "do") return "infinitive";
     }
     if (token.slot === "conjunction" && /^(?:and|or|nor)$/i.test(token.normal)) {
       sawCoordinator = true;
@@ -701,7 +778,7 @@ function subjectToken(tokens, verbIndex, seen) {
 
 function isNominal(token) {
   if (token.slot === "pronoun" || token.slot === "noun" || token.slot === "proper") return true;
-  return token.slot === "determiner" && /^(?:these|those)$/i.test(token.normal);
+  return token.slot === "determiner" && token.plural;
 }
 
 function governedByPreposition(tokens, nounIndex, start) {
@@ -720,13 +797,16 @@ function governedByPreposition(tokens, nounIndex, start) {
 function personOf(token) {
   if (!token) return "singular";
   if (token.normal === "i") return "I";
-  if (PLURAL_PRONOUNS.has(token.normal)) return "plural";
   return token.plural ? "plural" : "singular";
 }
 
 function finiteTense(token) {
-  if (/^(?:did|had|was|were)$/i.test(token.normal)) return "past";
-  return token.verbForm === "past" ? "past" : "present";
+  if (token.verbForm === "past") return "past";
+  const lemma = infinitiveOf(token.normal);
+  const forms = auxForms(lemma);
+  if (token.normal === (forms.PastTense || "").toLowerCase()) return "past";
+  if (lemma === "be" && token.normal === inflectBe("past", "plural")) return "past";
+  return "present";
 }
 
 function startsWithVowelSound(normal) {
@@ -817,23 +897,21 @@ function repairTokens(tokens) {
       const previous = previousGovernor(repaired, index);
       const finite = !previous || (previous.normal !== "to" && previous.slot !== "modal");
 
+      const lemma = infinitiveOf(token.normal);
+
       if (!finite) {
-        if (BE_FORMS.test(token.normal)) setWord(token, "be");
-        else if (HAVE_FORMS.test(token.normal)) setWord(token, "have");
-        else if (DO_FORMS.test(token.normal)) setWord(token, "do");
+        if (lemma === "be" || lemma === "have" || lemma === "do") setWord(token, lemma);
         continue;
       }
 
-      if (/^(?:been|being|having|doing|done)$/i.test(token.normal)) continue;
+      if (isNonFiniteAux(token.normal)) continue;
 
       const person = personOf(subjectToken(repaired, index));
       const tense = finiteTense(token);
-      if (BE_FORMS.test(token.normal)) {
-        setWord(token, BE_TABLE[tense][person] || BE_TABLE[tense].singular);
-      } else if (HAVE_FORMS.test(token.normal)) {
-        setWord(token, tense === "past" ? "had" : person === "singular" ? "has" : "have");
-      } else if (DO_FORMS.test(token.normal)) {
-        setWord(token, tense === "past" ? "did" : person === "singular" ? "does" : "do");
+      if (lemma === "be") {
+        setWord(token, inflectBe(tense, person));
+      } else if (lemma === "have" || lemma === "do") {
+        setWord(token, inflectVerb(lemma, tense === "past" ? "past" : "present", person));
       }
     }
   }
@@ -997,6 +1075,6 @@ if (typeof module === "object" && module.exports) {
   module.exports = {
     generate, verbLemma, conjugateVerb, buildPool, analyze, normalizeInput,
     repairTokens, inflectAdjective, inflectVerb, fillDraft, subjectToken,
-    contextualVerbForm, personOf,
+    contextualVerbForm, personOf, tokensToText, infinitiveOf, inflectNoun,
   };
 }
