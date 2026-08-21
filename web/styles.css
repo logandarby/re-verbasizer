@@ -30,6 +30,7 @@ body {
   color: var(--ink);
   background-color: var(--paper);
   background-image:
+    linear-gradient(rgba(255, 255, 255, 0.3)),
     url("paper-desk.png"),
     repeating-linear-gradient(
       0.5deg,
