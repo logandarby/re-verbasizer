@@ -9,28 +9,17 @@
       content="A cut-up writing tool. Keep the grammar of one text and fill it with words from another. Inspired by William S. Burroughs and David Bowie's Verbasizer."
     />
     <meta name="author" content="Logan Darby" />
-    <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#f7f7f5" />
-    <meta property="og:title" content="The Re-verbasizer" />
-    <meta
-      property="og:description"
-      content="Keep the grammar of one text and fill it with words from another."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="The Re-verbasizer" />
-    <meta
-      name="twitter:description"
-      content="Keep the grammar of one text and fill it with words from another."
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Limelight&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"
+      rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="#" aria-label="The Re-verbasizer home"
-        >The Re-verbasizer</a
-      >
+      <span class="wordmark">The Re-verbasizer</span>
       <div class="header-meta">
         <a class="about-link" href="#about">About</a>
         <div class="dictionary-status" id="dictionary-status" role="status">
@@ -41,7 +30,7 @@
     </header>
 
     <main>
-      <section class="workspace" aria-label="Cut-up workspace">
+      <section class="workspace">
         <details class="source-panel" id="source-panel">
           <summary class="source-toggle">
             <span>Load text excerpts</span>
@@ -92,12 +81,21 @@
               >
                 Load both
               </button>
-              <button class="source-load-button source-load-button-ghost" id="surprise-source-button" type="button">
+              <button
+                class="source-load-button source-load-button-ghost"
+                id="surprise-source-button"
+                type="button"
+              >
                 Surprise me
               </button>
             </div>
 
-            <p class="source-status" id="source-status" role="status" hidden></p>
+            <p
+              class="source-status"
+              id="source-status"
+              role="status"
+              hidden
+            ></p>
           </div>
         </details>
 
@@ -112,7 +110,7 @@
               placeholder="Paste the text you want to rearrange..."
               spellcheck="true"
             >
-The tired radio hums beside a blue window. We carry paper lanterns through the sleeping city while distant engines quietly turn. A singer finds an old photograph beneath the table, and the morning rain washes every empty street.</textarea
+The magnet sun hangs in the cinch. Mulberry stains the shorts and sand gathers in the seams, while raindrops fall as if they were cast from lead. A kite slices smoke over the foam of day. Six sails pull a silk thread into a hundred knots. Leaves shiver on the trellis. Spiders fill the room. You smell of dead flowers, honey glazed. The train hops the city at a few spots. Crooked courses nestle in the mountain. Do you really think that we can go? Roots sprawl under the wet clay. A mottled duskywing rests beside a silkworm. The second sun came past the glass, past old faded midnight. The vellum smells of myrrh, and a murmur moves through the velvet. Dust whirls in the room. Amber stains the fingertips rust-dark. Blueberry jam sits open on the table. Bumper stickers cover the hatchback. Marigolds and magnolias shake when the firecracker goes. A blade of light catches matted fur caked in mud. Night shows its empty belly. Sell the clothes you never wore. At midnight the house stands flat. Sprinklers crawl mist over the empty road. The pedestrian light counts down for nobody.</textarea
             >
           </label>
 
@@ -126,7 +124,7 @@ The tired radio hums beside a blue window. We carry paper lanterns through the s
               placeholder="Paste the text whose structure you want to use..."
               spellcheck="true"
             >
-I open the narrow door and walk into the silent room. The light moves slowly across the wall.</textarea
+I open the door in the sky and run to see the moon looking back at me: A dead eye. The floor cracks underneath me.</textarea
             >
           </label>
         </div>
@@ -145,7 +143,7 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
             <span>Allow word reuse</span>
           </label>
           <label class="option">
-            <input id="preserve-lines" type="checkbox" />
+            <input id="preserve-lines" type="checkbox" checked />
             <span>Preserve line breaks</span>
           </label>
         </div>
@@ -198,22 +196,26 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
           Wikipedia, Project Gutenberg, or Wikisource. Then hit Generate.
         </p>
         <p>
-          The reference keeps its word order, punctuation, and common words
-          like “the,” “of,” “and,” and “is.” Nouns, verbs, adjectives, and
-          adverbs are replaced with words from the scramble. Those replacements
-          are then adjusted to match number and tense. A few drafts are scored
-          and the most grammatical one is shown. Use Preserve line breaks for
-          poetry. Shuffle again for another version.
+          The reference keeps its word order, punctuation, and common words like
+          “the,” “of,” “and,” and “is.” Nouns, verbs, adjectives, and adverbs
+          are replaced with words from the scramble. Those replacements are then
+          adjusted to match number and tense. A few drafts are scored and the
+          most grammatical one is shown. Use Preserve line breaks for poetry.
+          Shuffle again for another version.
         </p>
         <p>
           The Re-verbasizer is inspired by the cut-up writing of William S.
           Burroughs, including <cite>Nova Express</cite>, and by David Bowie's
           Verbasizer, which he made with Brian Eno and Ty Roberts. Parts of
           speech are tagged with
-          <a href="https://github.com/spencermountain/compromise" rel="noopener noreferrer">compromise</a>.
-          This project is not affiliated with
-          <a href="https://verbasizer.com" rel="noopener noreferrer">verbasizer.com</a>,
-          another web version of Bowie's idea.
+          <a
+            href="https://github.com/spencermountain/compromise"
+            rel="noopener noreferrer"
+            >compromise</a
+          >. This project is not affiliated with
+          <a href="https://verbasizer.com" rel="noopener noreferrer"
+            >verbasizer.com</a
+          >, another web version of Bowie's idea.
         </p>
       </section>
     </main>

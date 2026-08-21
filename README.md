@@ -60,12 +60,12 @@ Excerpts are trimmed to about 120 reference words or 3,500 scramble
 words. Each load picks a fresh slice, so repeating the same title still
 varies.
 
-- **Wikipedia** — article extracts, grouped as Nature & Science, History
-  & Places, Arts & Culture, and Technology. CC BY-SA 4.0.
-- **Project Gutenberg** — public-domain books from the 1900–1930 window,
-  grouped by genre (novels, mystery, horror, science fiction, adventure,
-  poetry, essays). Joyce, Woolf, Christie, Lovecraft, Frost, Du Bois, and
-  others. Needs `python3 web/serve.py`.
+- **Wikipedia** — article extracts, grouped as Nature, Space, Places, Art,
+  and Machines. CC BY-SA 4.0.
+- **Project Gutenberg** — public-domain books, grouped by genre
+  (novels, mystery, horror, science fiction, adventure, poetry, essays).
+  Joyce, Stein, Toomer, Machen, Du Bois, and others. Needs
+  `python3 web/serve.py`.
 - **Wikisource** — poems, speeches, and essays. Short pieces may fill
   both fields from the same text.
 
@@ -77,22 +77,22 @@ page title; Gutenberg uses an ebook id:
 
 ```json
 {
-  "id": "wp-jazz",
+  "id": "wp-cutup",
   "library": "wikipedia",
   "category": "culture",
-  "page": "Jazz",
-  "title": "Jazz",
+  "page": "Cut-up technique",
+  "title": "Cut-up technique",
   "author": "Wikipedia"
 }
 ```
 
 ```json
 {
-  "id": "g-64317",
+  "id": "g-15396",
   "library": "gutenberg",
   "category": "novels",
-  "gutenbergId": 64317,
-  "title": "The Great Gatsby",
-  "author": "F. Scott Fitzgerald"
+  "gutenbergId": 15396,
+  "title": "Tender Buttons",
+  "author": "Gertrude Stein"
 }
 ```

@@ -1,170 +1,259 @@
 {
   "categories": {
     "wikipedia": [
-      { "id": "nature", "label": "Nature & Science" },
-      { "id": "history", "label": "History & Places" },
-      { "id": "culture", "label": "Arts & Culture" },
-      { "id": "technology", "label": "Technology" }
+      { "id": "nature", "label": "Nature" },
+      { "id": "space", "label": "Space" },
+      { "id": "history", "label": "Places" },
+      { "id": "culture", "label": "Art" },
+      { "id": "technology", "label": "Machines" }
     ],
     "gutenberg": [
-      { "id": "novels", "label": "Novels (1900–1930)" },
-      { "id": "mystery", "label": "Mystery & Crime" },
-      { "id": "horror", "label": "Horror & Weird" },
-      { "id": "scifi", "label": "Science Fiction" },
+      { "id": "novels", "label": "Novels" },
+      { "id": "mystery", "label": "Mystery" },
+      { "id": "horror", "label": "Horror" },
+      { "id": "scifi", "label": "Science fiction" },
       { "id": "adventure", "label": "Adventure" },
       { "id": "poetry", "label": "Poetry" },
-      { "id": "essays", "label": "Essays & Ideas" }
+      { "id": "essays", "label": "Essays" }
     ],
     "wikisource": [
       { "id": "poetry", "label": "Poetry" },
       { "id": "speeches", "label": "Speeches" },
-      { "id": "essays", "label": "Essays & Letters" }
+      { "id": "essays", "label": "Essays" }
     ]
   },
   "works": [
     {
-      "id": "wp-jazz",
+      "id": "wp-cutup",
       "library": "wikipedia",
       "category": "culture",
-      "page": "Jazz",
-      "title": "Jazz",
+      "page": "Cut-up technique",
+      "title": "Cut-up technique",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-photography",
+      "id": "wp-gysin",
       "library": "wikipedia",
       "category": "culture",
-      "page": "Photography",
-      "title": "Photography",
+      "page": "Brion Gysin",
+      "title": "Brion Gysin",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-cinema",
+      "id": "wp-dada",
       "library": "wikipedia",
       "category": "culture",
-      "page": "Cinema of the United States",
-      "title": "American Cinema",
+      "page": "Dada",
+      "title": "Dada",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-coffee",
+      "id": "wp-collage",
       "library": "wikipedia",
       "category": "culture",
-      "page": "Coffee",
-      "title": "Coffee",
+      "page": "Collage",
+      "title": "Collage",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-evolution",
+      "id": "wp-ziggy",
+      "library": "wikipedia",
+      "category": "culture",
+      "page": "Ziggy Stardust (character)",
+      "title": "Ziggy Stardust",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-moth",
       "library": "wikipedia",
       "category": "nature",
-      "page": "Evolution",
-      "title": "Evolution",
+      "page": "Moth",
+      "title": "Moth",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-solar",
+      "id": "wp-fog",
       "library": "wikipedia",
       "category": "nature",
-      "page": "Solar System",
-      "title": "Solar System",
+      "page": "Fog",
+      "title": "Fog",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-atlantic",
+      "id": "wp-phosphorus",
       "library": "wikipedia",
       "category": "nature",
-      "page": "Atlantic Ocean",
-      "title": "Atlantic Ocean",
+      "page": "Phosphorus",
+      "title": "Phosphorus",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-climate",
+      "id": "wp-pigeon",
       "library": "wikipedia",
       "category": "nature",
-      "page": "Climate change",
-      "title": "Climate Change",
+      "page": "Passenger pigeon",
+      "title": "Passenger pigeon",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-ww2",
+      "id": "wp-tangier",
       "library": "wikipedia",
       "category": "history",
-      "page": "World War II",
-      "title": "World War II",
+      "page": "Tangier",
+      "title": "Tangier",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-nyc",
+      "id": "wp-times-square",
       "library": "wikipedia",
       "category": "history",
-      "page": "New York City",
-      "title": "New York City",
+      "page": "Times Square",
+      "title": "Times Square",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-paris",
+      "id": "wp-stockyards",
       "library": "wikipedia",
       "category": "history",
-      "page": "Paris",
-      "title": "Paris",
+      "page": "Union Stock Yards",
+      "title": "Union Stock Yards",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-industrial",
+      "id": "wp-beat-hotel",
       "library": "wikipedia",
       "category": "history",
-      "page": "Industrial Revolution",
-      "title": "Industrial Revolution",
+      "page": "Beat Hotel",
+      "title": "Beat Hotel",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-internet",
+      "id": "wp-tape",
       "library": "wikipedia",
       "category": "technology",
-      "page": "Internet",
-      "title": "Internet",
+      "page": "Tape recorder",
+      "title": "Tape recorder",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-computer",
+      "id": "wp-typewriter",
       "library": "wikipedia",
       "category": "technology",
-      "page": "Computer",
-      "title": "Computer",
+      "page": "Typewriter",
+      "title": "Typewriter",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-telephone",
+      "id": "wp-shortwave",
       "library": "wikipedia",
       "category": "technology",
-      "page": "Telephone",
-      "title": "Telephone",
+      "page": "Shortwave radio",
+      "title": "Shortwave radio",
       "author": "Wikipedia"
     },
     {
-      "id": "wp-radio",
+      "id": "wp-ticker",
       "library": "wikipedia",
       "category": "technology",
-      "page": "Radio",
-      "title": "Radio",
+      "page": "Ticker tape",
+      "title": "Ticker tape",
       "author": "Wikipedia"
     },
     {
-      "id": "g-64317",
-      "library": "gutenberg",
-      "category": "novels",
-      "gutenbergId": 64317,
-      "title": "The Great Gatsby",
-      "author": "F. Scott Fitzgerald"
+      "id": "wp-mars",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Mars",
+      "title": "Mars",
+      "author": "Wikipedia"
     },
     {
-      "id": "g-67138",
-      "library": "gutenberg",
-      "category": "novels",
-      "gutenbergId": 67138,
-      "title": "The Sun Also Rises",
-      "author": "Ernest Hemingway"
+      "id": "wp-titan",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Titan (moon)",
+      "title": "Titan",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-europa",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Europa (moon)",
+      "title": "Europa",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-pluto",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Pluto",
+      "title": "Pluto",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-proxima",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Proxima Centauri b",
+      "title": "Proxima Centauri b",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-et",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Extraterrestrial life",
+      "title": "Extraterrestrial life",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-fermi",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Fermi paradox",
+      "title": "Fermi paradox",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-saucer",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Flying saucer",
+      "title": "Flying saucer",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-voyager",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Voyager 1",
+      "title": "Voyager 1",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-pulsar",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Pulsar",
+      "title": "Pulsar",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-crab",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Crab Nebula",
+      "title": "Crab Nebula",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-black-hole",
+      "library": "wikipedia",
+      "category": "space",
+      "page": "Black hole",
+      "title": "Black hole",
+      "author": "Wikipedia"
     },
     {
       "id": "g-71865",
@@ -199,44 +288,60 @@
       "author": "James Joyce"
     },
     {
-      "id": "g-541",
+      "id": "g-15396",
       "library": "gutenberg",
       "category": "novels",
-      "gutenbergId": 541,
-      "title": "The Age of Innocence",
-      "author": "Edith Wharton"
+      "gutenbergId": 15396,
+      "title": "Tender Buttons",
+      "author": "Gertrude Stein"
     },
     {
-      "id": "g-284",
+      "id": "g-15408",
       "library": "gutenberg",
       "category": "novels",
-      "gutenbergId": 284,
-      "title": "The House of Mirth",
-      "author": "Edith Wharton"
+      "gutenbergId": 15408,
+      "title": "Three Lives",
+      "author": "Gertrude Stein"
     },
     {
-      "id": "g-543",
+      "id": "g-8446",
       "library": "gutenberg",
       "category": "novels",
-      "gutenbergId": 543,
-      "title": "Main Street",
-      "author": "Sinclair Lewis"
+      "gutenbergId": 8446,
+      "title": "The Enormous Room",
+      "author": "E. E. Cummings"
     },
     {
-      "id": "g-61221",
+      "id": "g-60093",
       "library": "gutenberg",
       "category": "novels",
-      "gutenbergId": 61221,
-      "title": "A Passage to India",
-      "author": "E. M. Forster"
+      "gutenbergId": 60093,
+      "title": "Cane",
+      "author": "Jean Toomer"
     },
     {
-      "id": "g-2641",
+      "id": "g-71853",
       "library": "gutenberg",
       "category": "novels",
-      "gutenbergId": 2641,
-      "title": "A Room with a View",
-      "author": "E. M. Forster"
+      "gutenbergId": 71853,
+      "title": "Manhattan Transfer",
+      "author": "John Dos Passos"
+    },
+    {
+      "id": "g-2775",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 2775,
+      "title": "The Good Soldier",
+      "author": "Ford Madox Ford"
+    },
+    {
+      "id": "g-974",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 974,
+      "title": "The Secret Agent",
+      "author": "Joseph Conrad"
     },
     {
       "id": "g-5200",
@@ -247,52 +352,12 @@
       "author": "Franz Kafka"
     },
     {
-      "id": "g-242",
-      "library": "gutenberg",
-      "category": "novels",
-      "gutenbergId": 242,
-      "title": "My Ántonia",
-      "author": "Willa Cather"
-    },
-    {
       "id": "g-416",
       "library": "gutenberg",
       "category": "novels",
       "gutenbergId": 416,
       "title": "Winesburg, Ohio",
       "author": "Sherwood Anderson"
-    },
-    {
-      "id": "g-140",
-      "library": "gutenberg",
-      "category": "novels",
-      "gutenbergId": 140,
-      "title": "The Jungle",
-      "author": "Upton Sinclair"
-    },
-    {
-      "id": "g-69087",
-      "library": "gutenberg",
-      "category": "mystery",
-      "gutenbergId": 69087,
-      "title": "The Murder of Roger Ackroyd",
-      "author": "Agatha Christie"
-    },
-    {
-      "id": "g-863",
-      "library": "gutenberg",
-      "category": "mystery",
-      "gutenbergId": 863,
-      "title": "The Mysterious Affair at Styles",
-      "author": "Agatha Christie"
-    },
-    {
-      "id": "g-61168",
-      "library": "gutenberg",
-      "category": "mystery",
-      "gutenbergId": 61168,
-      "title": "The Man in the Brown Suit",
-      "author": "Agatha Christie"
     },
     {
       "id": "g-58820",
@@ -303,6 +368,14 @@
       "author": "Dorothy L. Sayers"
     },
     {
+      "id": "g-1695",
+      "library": "gutenberg",
+      "category": "mystery",
+      "gutenbergId": 1695,
+      "title": "The Man Who Was Thursday",
+      "author": "G. K. Chesterton"
+    },
+    {
       "id": "g-558",
       "library": "gutenberg",
       "category": "mystery",
@@ -311,12 +384,28 @@
       "author": "John Buchan"
     },
     {
-      "id": "g-175",
+      "id": "g-8492",
       "library": "gutenberg",
       "category": "horror",
-      "gutenbergId": 175,
-      "title": "The Phantom of the Opera",
-      "author": "Gaston Leroux"
+      "gutenbergId": 8492,
+      "title": "The King in Yellow",
+      "author": "Robert W. Chambers"
+    },
+    {
+      "id": "g-389",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 389,
+      "title": "The Great God Pan",
+      "author": "Arthur Machen"
+    },
+    {
+      "id": "g-13969",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 13969,
+      "title": "The Hill of Dreams",
+      "author": "Arthur Machen"
     },
     {
       "id": "g-68283",
@@ -324,22 +413,6 @@
       "category": "horror",
       "gutenbergId": 68283,
       "title": "The Call of Cthulhu",
-      "author": "H. P. Lovecraft"
-    },
-    {
-      "id": "g-50133",
-      "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 50133,
-      "title": "The Dunwich Horror",
-      "author": "H. P. Lovecraft"
-    },
-    {
-      "id": "g-31469",
-      "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 31469,
-      "title": "The Shunned House",
       "author": "H. P. Lovecraft"
     },
     {
@@ -359,12 +432,20 @@
       "author": "Algernon Blackwood"
     },
     {
-      "id": "g-1013",
+      "id": "g-1329",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 1013,
-      "title": "The First Men in the Moon",
-      "author": "H. G. Wells"
+      "gutenbergId": 1329,
+      "title": "A Voyage to Arcturus",
+      "author": "David Lindsay"
+    },
+    {
+      "id": "g-59112",
+      "library": "gutenberg",
+      "category": "scifi",
+      "gutenbergId": 59112,
+      "title": "R.U.R.",
+      "author": "Karel Čapek"
     },
     {
       "id": "g-1059",
@@ -375,22 +456,6 @@
       "author": "H. G. Wells"
     },
     {
-      "id": "g-62",
-      "library": "gutenberg",
-      "category": "scifi",
-      "gutenbergId": 62,
-      "title": "A Princess of Mars",
-      "author": "Edgar Rice Burroughs"
-    },
-    {
-      "id": "g-139",
-      "library": "gutenberg",
-      "category": "scifi",
-      "gutenbergId": 139,
-      "title": "The Lost World",
-      "author": "Arthur Conan Doyle"
-    },
-    {
       "id": "g-32",
       "library": "gutenberg",
       "category": "scifi",
@@ -399,28 +464,36 @@
       "author": "Charlotte Perkins Gilman"
     },
     {
-      "id": "g-20869",
+      "id": "g-1164",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 20869,
-      "title": "The Skylark of Space",
-      "author": "E. E. Smith"
-    },
-    {
-      "id": "g-215",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 215,
-      "title": "The Call of the Wild",
+      "gutenbergId": 1164,
+      "title": "The Iron Heel",
       "author": "Jack London"
     },
     {
-      "id": "g-910",
+      "id": "g-144",
       "library": "gutenberg",
       "category": "adventure",
-      "gutenbergId": 910,
-      "title": "White Fang",
-      "author": "Jack London"
+      "gutenbergId": 144,
+      "title": "The Voyage Out",
+      "author": "Virginia Woolf"
+    },
+    {
+      "id": "g-942",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 942,
+      "title": "Green Mansions",
+      "author": "W. H. Hudson"
+    },
+    {
+      "id": "g-2360",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 2360,
+      "title": "The Riddle of the Sands",
+      "author": "Erskine Childers"
     },
     {
       "id": "g-1074",
@@ -431,44 +504,12 @@
       "author": "Jack London"
     },
     {
-      "id": "g-78",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 78,
-      "title": "Tarzan of the Apes",
-      "author": "Edgar Rice Burroughs"
-    },
-    {
-      "id": "g-60",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 60,
-      "title": "The Scarlet Pimpernel",
-      "author": "Baroness Orczy"
-    },
-    {
-      "id": "g-16",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 16,
-      "title": "Peter Pan",
-      "author": "J. M. Barrie"
-    },
-    {
       "id": "g-2226",
       "library": "gutenberg",
       "category": "adventure",
       "gutenbergId": 2226,
       "title": "Kim",
       "author": "Rudyard Kipling"
-    },
-    {
-      "id": "g-1965",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 1965,
-      "title": "Captain Blood",
-      "author": "Rafael Sabatini"
     },
     {
       "id": "g-1321",
@@ -503,14 +544,6 @@
       "author": "Robert Frost"
     },
     {
-      "id": "g-3021",
-      "library": "gutenberg",
-      "category": "poetry",
-      "gutenbergId": 3021,
-      "title": "A Boy's Will",
-      "author": "Robert Frost"
-    },
-    {
       "id": "g-109",
       "library": "gutenberg",
       "category": "poetry",
@@ -527,28 +560,12 @@
       "author": "W. E. B. Du Bois"
     },
     {
-      "id": "g-5827",
+      "id": "g-6456",
       "library": "gutenberg",
       "category": "essays",
-      "gutenbergId": 5827,
-      "title": "The Problems of Philosophy",
-      "author": "Bertrand Russell"
-    },
-    {
-      "id": "g-25447",
-      "library": "gutenberg",
-      "category": "essays",
-      "gutenbergId": 25447,
-      "title": "Mysticism and Logic",
-      "author": "Bertrand Russell"
-    },
-    {
-      "id": "g-5116",
-      "library": "gutenberg",
-      "category": "essays",
-      "gutenbergId": 5116,
-      "title": "Pragmatism",
-      "author": "William James"
+      "gutenbergId": 6456,
+      "title": "Public Opinion",
+      "author": "Walter Lippmann"
     },
     {
       "id": "g-621",
@@ -559,60 +576,44 @@
       "author": "William James"
     },
     {
-      "id": "g-852",
+      "id": "g-22472",
       "library": "gutenberg",
       "category": "essays",
-      "gutenbergId": 852,
-      "title": "Democracy and Education",
-      "author": "John Dewey"
+      "gutenbergId": 22472,
+      "title": "The Book of the Damned",
+      "author": "Charles Fort"
     },
     {
-      "id": "g-6456",
+      "id": "g-2044",
       "library": "gutenberg",
       "category": "essays",
-      "gutenbergId": 6456,
-      "title": "Public Opinion",
-      "author": "Walter Lippmann"
+      "gutenbergId": 2044,
+      "title": "The Education of Henry Adams",
+      "author": "Henry Adams"
     },
     {
-      "id": "ws-raven",
+      "id": "ws-metro",
       "library": "wikisource",
       "category": "poetry",
-      "page": "The Raven and Other Poems/The Raven",
-      "title": "The Raven",
-      "author": "Edgar Allan Poe"
+      "page": "In a Station of the Metro",
+      "title": "In a Station of the Metro",
+      "author": "Ezra Pound"
     },
     {
-      "id": "ws-ozymandias",
+      "id": "ws-blackbird",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Rosalind and Helen, A Modern Eclogue (1819)/Sonnet",
-      "title": "Ozymandias",
-      "author": "Percy Bysshe Shelley"
+      "page": "Harmonium (Stevens)/Thirteen Ways of Looking at a Blackbird",
+      "title": "Thirteen Ways of Looking at a Blackbird",
+      "author": "Wallace Stevens"
     },
     {
-      "id": "ws-sonnet18",
+      "id": "ws-jar",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Shake-speares Sonnets, Never before Imprinted/Sonnet 18",
-      "title": "Sonnet 18",
-      "author": "William Shakespeare"
-    },
-    {
-      "id": "ws-if",
-      "library": "wikisource",
-      "category": "poetry",
-      "page": "Rewards and Fairies/If—",
-      "title": "If—",
-      "author": "Rudyard Kipling"
-    },
-    {
-      "id": "ws-road",
-      "library": "wikisource",
-      "category": "poetry",
-      "page": "Mountain Interval/The Road Not Taken",
-      "title": "The Road Not Taken",
-      "author": "Robert Frost"
+      "page": "Harmonium (Stevens)/Anecdote of the Jar",
+      "title": "Anecdote of the Jar",
+      "author": "Wallace Stevens"
     },
     {
       "id": "ws-prufrock",
@@ -623,28 +624,20 @@
       "author": "T. S. Eliot"
     },
     {
-      "id": "ws-colossus",
+      "id": "ws-rivers",
       "library": "wikisource",
       "category": "poetry",
-      "page": "The New Colossus",
-      "title": "The New Colossus",
-      "author": "Emma Lazarus"
+      "page": "The Negro Speaks of Rivers (Crisis)",
+      "title": "The Negro Speaks of Rivers",
+      "author": "Langston Hughes"
     },
     {
-      "id": "ws-invictus",
+      "id": "ws-douglass",
       "library": "wikisource",
-      "category": "poetry",
-      "page": "Oxford Book of English Verse 1250-1900/Invictus",
-      "title": "Invictus",
-      "author": "William Ernest Henley"
-    },
-    {
-      "id": "ws-fire",
-      "library": "wikisource",
-      "category": "poetry",
-      "page": "American Poetry 1922/Fire and Ice",
-      "title": "Fire and Ice",
-      "author": "Robert Frost"
+      "category": "speeches",
+      "page": "What to the Slave Is the Fourth of July?",
+      "title": "What to the Slave Is the Fourth of July?",
+      "author": "Frederick Douglass"
     },
     {
       "id": "ws-gettysburg",
@@ -663,14 +656,6 @@
       "author": "Thomas Jefferson et al."
     },
     {
-      "id": "ws-douglass",
-      "library": "wikisource",
-      "category": "speeches",
-      "page": "What to the Slave Is the Fourth of July?",
-      "title": "What to the Slave Is the Fourth of July?",
-      "author": "Frederick Douglass"
-    },
-    {
       "id": "ws-truth",
       "library": "wikisource",
       "category": "speeches",
@@ -687,20 +672,36 @@
       "author": "Franklin D. Roosevelt"
     },
     {
-      "id": "ws-solitude",
+      "id": "ws-goldman",
       "library": "wikisource",
-      "category": "essays",
-      "page": "Essays: First Series/Self-Reliance",
-      "title": "Self-Reliance",
-      "author": "Ralph Waldo Emerson"
+      "category": "speeches",
+      "page": "Address to the Jury in U.S. v. Emma Goldman and Alexander Berkman",
+      "title": "Address to the Jury",
+      "author": "Emma Goldman"
     },
     {
-      "id": "ws-civil",
+      "id": "ws-debs",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "Debs' Speech of Sedition",
+      "title": "Canton Speech",
+      "author": "Eugene V. Debs"
+    },
+    {
+      "id": "ws-eliot-tradition",
       "library": "wikisource",
       "category": "essays",
-      "page": "Aesthetic Papers/Resistance to Civil Government",
-      "title": "Civil Disobedience",
-      "author": "Henry David Thoreau"
+      "page": "The Sacred Wood/Tradition and the Individual Talent",
+      "title": "Tradition and the Individual Talent",
+      "author": "T. S. Eliot"
+    },
+    {
+      "id": "ws-bennett-brown",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "Mr. Bennett and Mrs. Brown",
+      "title": "Mr. Bennett and Mrs. Brown",
+      "author": "Virginia Woolf"
     }
   ]
 }
