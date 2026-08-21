@@ -8,6 +8,7 @@
       { "id": "technology", "label": "Machines" }
     ],
     "gutenberg": [
+      { "id": "occult", "label": "Occult" },
       { "id": "novels", "label": "Novels" },
       { "id": "mystery", "label": "Mystery" },
       { "id": "horror", "label": "Horror" },
@@ -590,6 +591,22 @@
       "gutenbergId": 2044,
       "title": "The Education of Henry Adams",
       "author": "Henry Adams"
+    },
+    {
+      "id": "g-70261",
+      "library": "gutenberg",
+      "category": "occult",
+      "gutenbergId": 70261,
+      "title": "Tannhäuser",
+      "author": "Aleister Crowley"
+    },
+    {
+      "id": "g-14040",
+      "library": "gutenberg",
+      "category": "occult",
+      "gutenbergId": 14040,
+      "title": "Household Gods",
+      "author": "Aleister Crowley"
     },
     {
       "id": "ws-raven",
