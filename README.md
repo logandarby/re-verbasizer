@@ -33,21 +33,19 @@ returns the highest-scoring one.
 
 ## Run locally
 
-Python 3, from the project root:
+From `web/`:
 
 ```bash
-python3 web/serve.py
+python3 -m http.server 8000
 ```
 
-Then open <http://127.0.0.1:8000/>. Pass a port if 8000 is taken
-(`python3 web/serve.py 8080`). The page cannot be opened as a `file://`
-URL; the worker and catalog fetch need HTTP.
+Then open <http://127.0.0.1:8000/>. The page cannot be opened as a
+`file://` URL; the worker and catalog fetch need HTTP.
 
-`web/serve.py` is a static file server plus proxies for Project Gutenberg,
-Wikipedia, and Wikisource. Gutenberg **requires** that proxy: it pulls
-small byte ranges from the book instead of downloading the whole file.
-Wikipedia and Wikisource use the proxy when it is up, and fall back to
-the public APIs if you serve the page some other way.
+Wikipedia and Wikisource load through their public APIs with MediaWiki
+CORS (`origin=*`). Gutenberg texts are stored under `web/texts/gutenberg/`
+so the browser can read them same-origin; gutenberg.org does not send
+CORS headers.
 
 ## Source library
 
@@ -64,8 +62,9 @@ varies.
   and Machines. CC BY-SA 4.0.
 - **Project Gutenberg** — public-domain books, grouped by genre
   (novels, mystery, horror, science fiction, adventure, poetry, essays).
-  Joyce, Stein, Toomer, Machen, Du Bois, and others. Needs
-  `python3 web/serve.py`.
+  Joyce, Stein, Toomer, Machen, Du Bois, and others. Served from
+  `web/texts/gutenberg/`. After adding a Gutenberg id to the catalog,
+  run `python3 scripts/fetch_gutenberg_texts.py`.
 - **Wikisource** — poems, speeches, and essays. Short pieces may fill
   both fields from the same text.
 
@@ -96,3 +95,8 @@ page title; Gutenberg uses an ebook id:
   "author": "Gertrude Stein"
 }
 ```
+
+## GitHub Pages
+
+Push to `gh-pages` to deploy `web/` at
+<https://logandarby.github.io/re-verbasizer/>.

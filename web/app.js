@@ -48,7 +48,6 @@ let latestTokens = [];
 let outputHistory = [];
 let textCatalog = null;
 let sourceLoading = false;
-let gutenbergProxyReady = false;
 
 function wordCount(text) {
   return text.match(WORD_PATTERN)?.length || 0;
@@ -314,14 +313,6 @@ async function loadSelectedExcerpt(target, work = selectedWork()) {
     return;
   }
 
-  if (work.library === "gutenberg" && !gutenbergProxyReady) {
-    setSourceStatus(
-      "Gutenberg needs the local server. Run: python3 web/serve.py",
-      true,
-    );
-    return;
-  }
-
   setSourceLoading(true, target);
   setSourceStatus(`Loading ${work.title}...`);
 
@@ -355,23 +346,6 @@ async function surpriseExcerpt() {
   await loadSelectedExcerpt("both", work);
 }
 
-function updateGutenbergStatus() {
-  if (elements.sourceLibrary.value !== "gutenberg") {
-    clearSourceStatus();
-    return;
-  }
-
-  if (!gutenbergProxyReady) {
-    setSourceStatus(
-      "Gutenberg needs the local server. Run: python3 web/serve.py",
-      true,
-    );
-    return;
-  }
-
-  clearSourceStatus();
-}
-
 async function initSourcePanel() {
   setSourcePanelLoading(true);
   setSourceStatus("Loading library catalog...");
@@ -379,14 +353,14 @@ async function initSourcePanel() {
   try {
     textCatalog = await loadCatalog();
     populateCategories();
-    gutenbergProxyReady = await checkGutenbergProxy();
-    updateGutenbergStatus();
 
     if (!elements.sourceWork.options.length) {
       setSourceStatus(
         "Library catalog is empty. Hard-refresh the page (Ctrl+Shift+R).",
         true,
       );
+    } else {
+      clearSourceStatus();
     }
   } catch (error) {
     setSourceStatus(error.message || "Library catalog unavailable.", true);
@@ -396,18 +370,6 @@ async function initSourcePanel() {
     if (elements.sourceWork.options.length > 0) {
       setSourceButtonsEnabled(true);
     }
-  }
-}
-
-async function checkGutenbergProxy() {
-  try {
-    const response = await fetch("/api/health", { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(response.status);
-    }
-    return true;
-  } catch {
-    return false;
   }
 }
 
@@ -466,10 +428,7 @@ elements.copy.addEventListener("click", () => {
   copyText(latestOutput, elements.copy, "Copy");
 });
 
-elements.sourceLibrary.addEventListener("change", () => {
-  populateCategories();
-  updateGutenbergStatus();
-});
+elements.sourceLibrary.addEventListener("change", populateCategories);
 elements.sourceCategory.addEventListener("change", populateWorks);
 elements.loadButtons.forEach((button) => {
   button.addEventListener("click", () => {

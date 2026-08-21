@@ -8,6 +8,7 @@ const LIMITS = {
 
 const WIKISOURCE_API = "https://en.wikisource.org/w/api.php";
 const WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php";
+const gutenbergTextCache = new Map();
 
 export async function loadCatalog() {
   const response = await fetch("text-catalog.json", { cache: "no-store" });
@@ -57,33 +58,48 @@ function normalizeParts(parts) {
 }
 
 async function fetchGutenbergExcerpts(work, parts) {
-  const query = [...parts].join(",");
-  const response = await fetch(
-    `/api/gutenberg/${work.gutenbergId}?parts=${query}`,
-    { cache: "no-store" },
-  );
-  if (!response.ok) {
-    throw new Error(await readError(response, `Gutenberg excerpt failed (${response.status})`));
+  const plainText = await loadGutenbergText(work.gutenbergId);
+  return buildExcerpts(plainText, parts, work);
+}
+
+async function loadGutenbergText(bookId) {
+  if (gutenbergTextCache.has(bookId)) {
+    return gutenbergTextCache.get(bookId);
   }
-  const payload = await response.json();
-  return {
-    reference: normalizeProse(payload.reference || ""),
-    scramble: normalizeProse(payload.scramble || ""),
-    meta: formatMeta(work),
-  };
+
+  const response = await fetch(`texts/gutenberg/${bookId}.txt`);
+  if (!response.ok) {
+    throw new Error(`Gutenberg text missing for ebook ${bookId}.`);
+  }
+
+  const plainText = cleanGutenberg(await response.text());
+  if (!plainText) {
+    throw new Error(`Gutenberg text was empty for ebook ${bookId}.`);
+  }
+  gutenbergTextCache.set(bookId, plainText);
+  return plainText;
+}
+
+function cleanGutenberg(text) {
+  return text
+    .replace(/\*\*\*\s*START OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^\n]*\n/gi, "")
+    .replace(/\*\*\*\s*END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[\s\S]*/gi, "")
+    .replace(/\[(?:Illustration|Frontispiece|T\.I\.|Pg \d+)[^\]]*\]/gi, "")
+    .replace(/_([^_\n]+)_/g, "$1")
+    .trim();
 }
 
 async function fetchWikisourceExcerpts(work, parts) {
   const plainText = await fetchWikisourcePlainText(work.page);
-  return buildMediaWikiExcerpts(plainText, parts, work);
+  return buildExcerpts(plainText, parts, work);
 }
 
 async function fetchWikipediaExcerpts(work, parts) {
   const plainText = await fetchWikipediaPlainText(work.page);
-  return buildMediaWikiExcerpts(plainText, parts, work);
+  return buildExcerpts(plainText, parts, work);
 }
 
-function buildMediaWikiExcerpts(plainText, parts, work) {
+function buildExcerpts(plainText, parts, work) {
   const normalized = normalizeProse(plainText);
   const reference = parts.has("reference")
     ? pickRandomSentenceSlice(normalized, LIMITS.reference)
@@ -100,33 +116,6 @@ function buildMediaWikiExcerpts(plainText, parts, work) {
 }
 
 async function fetchWikisourcePlainText(pageTitle) {
-  const proxyText = await fetchWikisourceViaProxy(pageTitle);
-  if (proxyText !== null) {
-    return proxyText;
-  }
-  return fetchWikisourceDirect(pageTitle);
-}
-
-async function fetchWikisourceViaProxy(pageTitle) {
-  try {
-    const response = await fetch(
-      `/api/wikisource?title=${encodeURIComponent(pageTitle)}`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) {
-      return null;
-    }
-    const payload = await response.json();
-    if (typeof payload.extract !== "string" || !payload.extract.trim()) {
-      return null;
-    }
-    return normalizeProse(payload.extract);
-  } catch {
-    return null;
-  }
-}
-
-async function fetchWikisourceDirect(pageTitle) {
   const url = new URL(WIKISOURCE_API);
   url.searchParams.set("action", "parse");
   url.searchParams.set("page", pageTitle);
@@ -157,33 +146,6 @@ async function fetchWikisourceDirect(pageTitle) {
 }
 
 async function fetchWikipediaPlainText(pageTitle) {
-  const proxyText = await fetchWikipediaViaProxy(pageTitle);
-  if (proxyText !== null) {
-    return proxyText;
-  }
-  return fetchWikipediaDirect(pageTitle);
-}
-
-async function fetchWikipediaViaProxy(pageTitle) {
-  try {
-    const response = await fetch(
-      `/api/wikipedia?title=${encodeURIComponent(pageTitle)}`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) {
-      return null;
-    }
-    const payload = await response.json();
-    if (typeof payload.extract !== "string") {
-      return null;
-    }
-    return cleanWikipediaExtract(payload.extract);
-  } catch {
-    return null;
-  }
-}
-
-async function fetchWikipediaDirect(pageTitle) {
   const url = new URL(WIKIPEDIA_API);
   url.searchParams.set("action", "query");
   url.searchParams.set("prop", "extracts");
@@ -380,18 +342,6 @@ function trimToSentenceEnd(text) {
 
 function formatMeta(work) {
   return `${work.title} — ${work.author}`;
-}
-
-async function readError(response, fallback) {
-  try {
-    const payload = await response.json();
-    if (payload?.error) {
-      return payload.error;
-    }
-  } catch {
-    // Ignore JSON parse failures.
-  }
-  return fallback;
 }
 
 export function wordCount(text) {
