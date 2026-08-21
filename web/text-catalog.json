@@ -1,0 +1,489 @@
+{
+  "categories": {
+    "wikipedia": [
+      { "id": "nature", "label": "Nature & Science" },
+      { "id": "history", "label": "History & Places" },
+      { "id": "culture", "label": "Arts & Culture" },
+      { "id": "technology", "label": "Technology" }
+    ],
+    "gutenberg": [
+      { "id": "modern", "label": "Modern Classics (1900–1930)" },
+      { "id": "horror", "label": "Horror & Gothic" },
+      { "id": "scifi", "label": "Science Fiction" },
+      { "id": "adventure", "label": "Adventure" },
+      { "id": "poetry", "label": "Poetry" },
+      { "id": "philosophy", "label": "Philosophy & Essays" }
+    ],
+    "wikisource": [
+      { "id": "poetry", "label": "Poetry" },
+      { "id": "speeches", "label": "Speeches" },
+      { "id": "essays", "label": "Essays & Letters" }
+    ]
+  },
+  "works": [
+    {
+      "id": "wp-jazz",
+      "library": "wikipedia",
+      "category": "culture",
+      "page": "Jazz",
+      "title": "Jazz",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-photography",
+      "library": "wikipedia",
+      "category": "culture",
+      "page": "Photography",
+      "title": "Photography",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-cinema",
+      "library": "wikipedia",
+      "category": "culture",
+      "page": "Cinema of the United States",
+      "title": "American Cinema",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-coffee",
+      "library": "wikipedia",
+      "category": "culture",
+      "page": "Coffee",
+      "title": "Coffee",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-evolution",
+      "library": "wikipedia",
+      "category": "nature",
+      "page": "Evolution",
+      "title": "Evolution",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-solar",
+      "library": "wikipedia",
+      "category": "nature",
+      "page": "Solar System",
+      "title": "Solar System",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-atlantic",
+      "library": "wikipedia",
+      "category": "nature",
+      "page": "Atlantic Ocean",
+      "title": "Atlantic Ocean",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-climate",
+      "library": "wikipedia",
+      "category": "nature",
+      "page": "Climate change",
+      "title": "Climate Change",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-ww2",
+      "library": "wikipedia",
+      "category": "history",
+      "page": "World War II",
+      "title": "World War II",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-nyc",
+      "library": "wikipedia",
+      "category": "history",
+      "page": "New York City",
+      "title": "New York City",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-paris",
+      "library": "wikipedia",
+      "category": "history",
+      "page": "Paris",
+      "title": "Paris",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-industrial",
+      "library": "wikipedia",
+      "category": "history",
+      "page": "Industrial Revolution",
+      "title": "Industrial Revolution",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-internet",
+      "library": "wikipedia",
+      "category": "technology",
+      "page": "Internet",
+      "title": "Internet",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-computer",
+      "library": "wikipedia",
+      "category": "technology",
+      "page": "Computer",
+      "title": "Computer",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-telephone",
+      "library": "wikipedia",
+      "category": "technology",
+      "page": "Telephone",
+      "title": "Telephone",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "wp-radio",
+      "library": "wikipedia",
+      "category": "technology",
+      "page": "Radio",
+      "title": "Radio",
+      "author": "Wikipedia"
+    },
+    {
+      "id": "g-64317",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 64317,
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald"
+    },
+    {
+      "id": "g-67138",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 67138,
+      "title": "The Sun Also Rises",
+      "author": "Ernest Hemingway"
+    },
+    {
+      "id": "g-805",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 805,
+      "title": "This Side of Paradise",
+      "author": "F. Scott Fitzgerald"
+    },
+    {
+      "id": "g-9830",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 9830,
+      "title": "The Beautiful and Damned",
+      "author": "F. Scott Fitzgerald"
+    },
+    {
+      "id": "g-541",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 541,
+      "title": "The Age of Innocence",
+      "author": "Edith Wharton"
+    },
+    {
+      "id": "g-71865",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 71865,
+      "title": "Mrs. Dalloway",
+      "author": "Virginia Woolf"
+    },
+    {
+      "id": "g-4300",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 4300,
+      "title": "Ulysses",
+      "author": "James Joyce"
+    },
+    {
+      "id": "g-4217",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 4217,
+      "title": "A Portrait of the Artist as a Young Man",
+      "author": "James Joyce"
+    },
+    {
+      "id": "g-543",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 543,
+      "title": "Main Street",
+      "author": "Sinclair Lewis"
+    },
+    {
+      "id": "g-1156",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 1156,
+      "title": "Babbitt",
+      "author": "Sinclair Lewis"
+    },
+    {
+      "id": "g-61221",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 61221,
+      "title": "A Passage to India",
+      "author": "E. M. Forster"
+    },
+    {
+      "id": "g-69087",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 69087,
+      "title": "The Murder of Roger Ackroyd",
+      "author": "Agatha Christie"
+    },
+    {
+      "id": "g-5200",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 5200,
+      "title": "The Metamorphosis",
+      "author": "Franz Kafka"
+    },
+    {
+      "id": "g-7849",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 7849,
+      "title": "The Trial",
+      "author": "Franz Kafka"
+    },
+    {
+      "id": "g-140",
+      "library": "gutenberg",
+      "category": "modern",
+      "gutenbergId": 140,
+      "title": "The Jungle",
+      "author": "Upton Sinclair"
+    },
+    {
+      "id": "g-345",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 345,
+      "title": "Dracula",
+      "author": "Bram Stoker"
+    },
+    {
+      "id": "g-84",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 84,
+      "title": "Frankenstein",
+      "author": "Mary Shelley"
+    },
+    {
+      "id": "g-43",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 43,
+      "title": "Dr Jekyll and Mr Hyde",
+      "author": "Robert Louis Stevenson"
+    },
+    {
+      "id": "g-2148",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 2148,
+      "title": "The Legend of Sleepy Hollow",
+      "author": "Washington Irving"
+    },
+    {
+      "id": "g-35",
+      "library": "gutenberg",
+      "category": "scifi",
+      "gutenbergId": 35,
+      "title": "The Time Machine",
+      "author": "H. G. Wells"
+    },
+    {
+      "id": "g-5230",
+      "library": "gutenberg",
+      "category": "scifi",
+      "gutenbergId": 5230,
+      "title": "The Invisible Man",
+      "author": "H. G. Wells"
+    },
+    {
+      "id": "g-164",
+      "library": "gutenberg",
+      "category": "scifi",
+      "gutenbergId": 164,
+      "title": "Twenty Thousand Leagues Under the Sea",
+      "author": "Jules Verne"
+    },
+    {
+      "id": "g-36",
+      "library": "gutenberg",
+      "category": "scifi",
+      "gutenbergId": 36,
+      "title": "The War of the Worlds",
+      "author": "H. G. Wells"
+    },
+    {
+      "id": "g-120",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 120,
+      "title": "Treasure Island",
+      "author": "Robert Louis Stevenson"
+    },
+    {
+      "id": "g-766",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 766,
+      "title": "Moby-Dick",
+      "author": "Herman Melville"
+    },
+    {
+      "id": "g-74",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 74,
+      "title": "The Adventures of Tom Sawyer",
+      "author": "Mark Twain"
+    },
+    {
+      "id": "g-215",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 215,
+      "title": "The Call of the Wild",
+      "author": "Jack London"
+    },
+    {
+      "id": "g-1322",
+      "library": "gutenberg",
+      "category": "poetry",
+      "gutenbergId": 1322,
+      "title": "Leaves of Grass",
+      "author": "Walt Whitman"
+    },
+    {
+      "id": "g-1367",
+      "library": "gutenberg",
+      "category": "poetry",
+      "gutenbergId": 1367,
+      "title": "Selected Poems of Oscar Wilde",
+      "author": "Oscar Wilde"
+    },
+    {
+      "id": "g-1065",
+      "library": "gutenberg",
+      "category": "poetry",
+      "gutenbergId": 1065,
+      "title": "Poems of Emily Dickinson",
+      "author": "Emily Dickinson"
+    },
+    {
+      "id": "g-1232",
+      "library": "gutenberg",
+      "category": "philosophy",
+      "gutenbergId": 1232,
+      "title": "The Prince",
+      "author": "Niccolò Machiavelli"
+    },
+    {
+      "id": "g-205",
+      "library": "gutenberg",
+      "category": "philosophy",
+      "gutenbergId": 205,
+      "title": "Walden",
+      "author": "Henry David Thoreau"
+    },
+    {
+      "id": "g-1497",
+      "library": "gutenberg",
+      "category": "philosophy",
+      "gutenbergId": 1497,
+      "title": "The Republic",
+      "author": "Plato"
+    },
+    {
+      "id": "ws-raven",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "The Raven and Other Poems/The Raven",
+      "title": "The Raven",
+      "author": "Edgar Allan Poe"
+    },
+    {
+      "id": "ws-ozymandias",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "Ozymandias (Shelley)",
+      "title": "Ozymandias",
+      "author": "Percy Bysshe Shelley"
+    },
+    {
+      "id": "ws-sonnet18",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "Sonnet 18 (Shakespeare)",
+      "title": "Sonnet 18",
+      "author": "William Shakespeare"
+    },
+    {
+      "id": "ws-if",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "If—",
+      "title": "If—",
+      "author": "Rudyard Kipling"
+    },
+    {
+      "id": "ws-road",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "The Road Not Taken",
+      "title": "The Road Not Taken",
+      "author": "Robert Frost"
+    },
+    {
+      "id": "ws-gettysburg",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "Gettysburg Address (Bliss copy)",
+      "title": "Gettysburg Address",
+      "author": "Abraham Lincoln"
+    },
+    {
+      "id": "ws-declaration",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "United States Declaration of Independence",
+      "title": "Declaration of Independence",
+      "author": "Thomas Jefferson et al."
+    },
+    {
+      "id": "ws-solitude",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "Essays: First Series/Self-Reliance",
+      "title": "Self-Reliance",
+      "author": "Ralph Waldo Emerson"
+    },
+    {
+      "id": "ws-civil",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "Resistance to Civil Government (Thoreau)",
+      "title": "Civil Disobedience",
+      "author": "Henry David Thoreau"
+    }
+  ]
+}

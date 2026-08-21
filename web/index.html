@@ -26,6 +26,65 @@
 
     <main>
       <section class="workspace" aria-label="Cut-up workspace">
+        <details class="source-panel" id="source-panel">
+          <summary class="source-toggle">
+            <span>Load text excerpts</span>
+            <span class="source-chevron" aria-hidden="true"></span>
+          </summary>
+
+          <div class="source-body">
+            <div class="source-grid">
+              <label class="source-field">
+                <span>Library</span>
+                <select id="source-library">
+                  <option value="wikipedia">Wikipedia</option>
+                  <option value="gutenberg">Project Gutenberg</option>
+                  <option value="wikisource">Wikisource</option>
+                </select>
+              </label>
+
+              <label class="source-field">
+                <span>Category</span>
+                <select id="source-category"></select>
+              </label>
+
+              <label class="source-field source-field-wide">
+                <span>Work</span>
+                <select id="source-work"></select>
+              </label>
+            </div>
+
+            <div class="source-actions">
+              <button
+                class="source-load-button"
+                type="button"
+                data-load-target="scramble"
+              >
+                Load scramble
+              </button>
+              <button
+                class="source-load-button"
+                type="button"
+                data-load-target="reference"
+              >
+                Load reference
+              </button>
+              <button
+                class="source-load-button source-load-button-primary"
+                type="button"
+                data-load-target="both"
+              >
+                Load both
+              </button>
+              <button class="source-load-button source-load-button-ghost" id="surprise-source-button" type="button">
+                Surprise me
+              </button>
+            </div>
+
+            <p class="source-status" id="source-status" role="status" hidden></p>
+          </div>
+        </details>
+
         <div class="input-grid">
           <label class="text-panel">
             <span class="panel-heading">
@@ -66,7 +125,11 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
             <span>Generate</span>
           </button>
           <label class="option">
-            <input id="preserve-lines" type="checkbox" checked />
+            <input id="allow-reuse" type="checkbox" checked />
+            <span>Allow word reuse</span>
+          </label>
+          <label class="option">
+            <input id="preserve-lines" type="checkbox" />
             <span>Preserve line breaks</span>
           </label>
           <label class="option">
@@ -112,6 +175,6 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
       <span>Made by Logan Darby</span>
     </footer>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
