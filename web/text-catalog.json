@@ -592,27 +592,27 @@
       "author": "Henry Adams"
     },
     {
-      "id": "ws-metro",
+      "id": "ws-raven",
       "library": "wikisource",
       "category": "poetry",
-      "page": "In a Station of the Metro",
-      "title": "In a Station of the Metro",
-      "author": "Ezra Pound"
+      "page": "The Raven and Other Poems/The Raven",
+      "title": "The Raven",
+      "author": "Edgar Allan Poe"
     },
     {
-      "id": "ws-blackbird",
+      "id": "ws-hired-man",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Harmonium (Stevens)/Thirteen Ways of Looking at a Blackbird",
-      "title": "Thirteen Ways of Looking at a Blackbird",
-      "author": "Wallace Stevens"
+      "page": "North of Boston/The Death of the Hired Man",
+      "title": "The Death of the Hired Man",
+      "author": "Robert Frost"
     },
     {
-      "id": "ws-jar",
+      "id": "ws-sunday-morning",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Harmonium (Stevens)/Anecdote of the Jar",
-      "title": "Anecdote of the Jar",
+      "page": "Harmonium (Stevens)/Sunday Morning",
+      "title": "Sunday Morning",
       "author": "Wallace Stevens"
     },
     {
@@ -624,12 +624,28 @@
       "author": "T. S. Eliot"
     },
     {
-      "id": "ws-rivers",
+      "id": "ws-portrait",
       "library": "wikisource",
       "category": "poetry",
-      "page": "The Negro Speaks of Rivers (Crisis)",
-      "title": "The Negro Speaks of Rivers",
-      "author": "Langston Hughes"
+      "page": "Prufrock and Other Observations/Portrait of a Lady",
+      "title": "Portrait of a Lady",
+      "author": "T. S. Eliot"
+    },
+    {
+      "id": "ws-goblin",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "Goblin Market and Other Poems (1862)/Goblin Market",
+      "title": "Goblin Market",
+      "author": "Christina Rossetti"
+    },
+    {
+      "id": "ws-reading-gaol",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "The Poems of Oscar Wilde/The Ballad of Reading Gaol",
+      "title": "The Ballad of Reading Gaol",
+      "author": "Oscar Wilde"
     },
     {
       "id": "ws-douglass",
@@ -688,20 +704,52 @@
       "author": "Eugene V. Debs"
     },
     {
-      "id": "ws-eliot-tradition",
+      "id": "ws-self-reliance",
       "library": "wikisource",
       "category": "essays",
-      "page": "The Sacred Wood/Tradition and the Individual Talent",
-      "title": "Tradition and the Individual Talent",
-      "author": "T. S. Eliot"
+      "page": "Essays: First Series/Self-Reliance",
+      "title": "Self-Reliance",
+      "author": "Ralph Waldo Emerson"
     },
     {
-      "id": "ws-bennett-brown",
+      "id": "ws-civil",
       "library": "wikisource",
       "category": "essays",
-      "page": "Mr. Bennett and Mrs. Brown",
-      "title": "Mr. Bennett and Mrs. Brown",
-      "author": "Virginia Woolf"
+      "page": "Aesthetic Papers/Resistance to Civil Government",
+      "title": "Civil Disobedience",
+      "author": "Henry David Thoreau"
+    },
+    {
+      "id": "ws-modest-proposal",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "The Works of the Rev. Jonathan Swift/Volume 9/A Modest Proposal",
+      "title": "A Modest Proposal",
+      "author": "Jonathan Swift"
+    },
+    {
+      "id": "ws-decay-lying",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "Intentions/The Decay of Lying",
+      "title": "The Decay of Lying",
+      "author": "Oscar Wilde"
+    },
+    {
+      "id": "ws-walden-lived",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "Walden (1854) Thoreau/Where I Lived, and What I Lived for",
+      "title": "Where I Lived, and What I Lived For",
+      "author": "Henry David Thoreau"
+    },
+    {
+      "id": "ws-american-scholar",
+      "library": "wikisource",
+      "category": "essays",
+      "page": "The American Scholar",
+      "title": "The American Scholar",
+      "author": "Ralph Waldo Emerson"
     }
   ]
 }

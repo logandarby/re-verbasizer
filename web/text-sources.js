@@ -67,7 +67,8 @@ async function loadGutenbergText(bookId) {
     return gutenbergTextCache.get(bookId);
   }
 
-  const response = await fetch(`texts/gutenberg/${bookId}.txt`);
+  const url = new URL(`texts/gutenberg/${bookId}.txt`, import.meta.url);
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Gutenberg text missing for ebook ${bookId}.`);
   }
@@ -86,6 +87,8 @@ function cleanGutenberg(text) {
     .replace(/\*\*\*\s*END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[\s\S]*/gi, "")
     .replace(/\[(?:Illustration|Frontispiece|T\.I\.|Pg \d+)[^\]]*\]/gi, "")
     .replace(/_([^_\n]+)_/g, "$1")
+    .replace(/^Produced by[^\n]*(?:\n(?!\n)[^\n]*)*\n\s*\n/i, "")
+    .replace(/^Transcriber['’]s Notes?:[\s\S]*?(?:\n\s*\n){2,}/i, "")
     .trim();
 }
 
@@ -195,9 +198,11 @@ const WIKISOURCE_DROP_SELECTOR = [
   "figure",
   "audio",
   "video",
+  "header",
   ".ws-noexport",
   ".similar",
   ".licensetpl",
+  ".licenseContainer",
   ".mw-editsection",
   ".mw-empty-elt",
   ".ws-pagenum",
@@ -206,19 +211,46 @@ const WIKISOURCE_DROP_SELECTOR = [
   ".thumb",
   ".sister-projects",
   ".mediaContainer",
+  ".hatnote",
+  ".dablink",
+  ".noprint",
+  ".authority-control",
+  ".catlinks",
+  ".mw-indicators",
+  ".ws-header",
+  "[class*='licensetpl']",
+  "[class*='license']",
 ].join(", ");
+
+function looksLikeLicense(text) {
+  return /this work is in the public domain|public domain public domain false false|creative commons attribution/i.test(
+    text,
+  );
+}
+
+function stripLicenseBoilerplate(text) {
+  return text
+    .replace(/This work is in the public domain[\s\S]*/gi, "")
+    .replace(/This file is in the public domain[\s\S]*/gi, "")
+    .replace(/This work may be in the public domain[\s\S]*/gi, "")
+    .replace(/Public domain Public domain false false/gi, "")
+    .replace(/\b(?:sister projects|Wikidata item|Wikipedia article)\b[:\s,]*/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
 
 function htmlToPlainText(html) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   doc.querySelectorAll(WIKISOURCE_DROP_SELECTOR).forEach((node) => node.remove());
 
   const preferred = [...doc.querySelectorAll(".prp-pages-output, .poem, .wst-poem")]
-    .map((node) => normalizeProse(node.textContent || ""))
-    .filter((text) => wordCount(text) >= 20)
+    .map((node) => stripLicenseBoilerplate(normalizeProse(node.textContent || "")))
+    .filter((text) => wordCount(text) >= 40 && !looksLikeLicense(text))
     .sort((a, b) => b.length - a.length)[0];
 
-  const text = preferred || normalizeProse(doc.body.textContent || "");
-  if (wordCount(text) < 15) {
+  const text =
+    preferred || stripLicenseBoilerplate(normalizeProse(doc.body.textContent || ""));
+  if (wordCount(text) < 40 || looksLikeLicense(text)) {
     throw new Error("Wikisource page had no usable text.");
   }
   return text;

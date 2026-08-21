@@ -1,7 +1,7 @@
 name: Deploy GitHub Pages
 on:
   push:
-    branches: [gh-pages]
+    branches: [main, gh-pages]
 permissions:
   contents: read
   pages: write

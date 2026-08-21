@@ -1,6 +1,9 @@
 # The Re-verbasizer
 
-A cut-up writing tool inspired by William S. Burroughs and by David Bowie's
+Write a speech that sounds like the Gettysburg Address, but with all the
+words from a Robert Frost poem.
+
+The Re-verbasizer is a cut-up writing tool inspired by David Bowie's
 Verbasizer. Paste (or load) a scramble text and a reference text, then
 Generate. The page keeps the reference's grammar and fills it with words
 from the scramble.
@@ -65,8 +68,9 @@ varies.
   Joyce, Stein, Toomer, Machen, Du Bois, and others. Served from
   `web/texts/gutenberg/`. After adding a Gutenberg id to the catalog,
   run `python3 scripts/fetch_gutenberg_texts.py`.
-- **Wikisource** — poems, speeches, and essays. Short pieces may fill
-  both fields from the same text.
+- **Wikisource** — longer poems (*The Raven*, *Goblin Market*, Prufrock),
+  speeches, and well-known essays (Self-Reliance, Civil Disobedience,
+  A Modest Proposal). License chrome is stripped from the page text.
 
 Turn on **Preserve line breaks** if you are cutting poetry.
 
