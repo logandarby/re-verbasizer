@@ -102,5 +102,5 @@ page title; Gutenberg uses an ebook id:
 
 ## GitHub Pages
 
-Push to `gh-pages` to deploy `web/` at
+The site is the `web/` folder. Push to `main` to publish
 <https://logandarby.github.io/re-verbasizer/>.
