@@ -50,6 +50,59 @@ CORS (`origin=*`). Gutenberg texts are stored under `web/texts/gutenberg/`
 so the browser can read them same-origin; gutenberg.org does not send
 CORS headers.
 
+## Tests
+
+Grammar checks live in `web/tests/` and use Node's built-in test runner.
+No extra packages. From the repo root, with Node 18+:
+
+```bash
+node --test web/tests
+```
+
+Run one file or a name match:
+
+```bash
+node --test web/tests/repair.test.js
+node --test web/tests --test-name-pattern="Gettysburg identity"
+```
+
+The suite covers Gettysburg identity (repair must not rewrite a
+well-formed mold), subject–verb agreement, inflection, a moth-scramble
+cut-up of the Gettysburg mold, and regressions for the worker's
+retagging and recase fixes.
+
+| File | What it covers |
+| --- | --- |
+| `repair.test.js` | Identity, agreement, verb form, subjects |
+| `inflect.test.js` | Verbs, adjectives, nouns, *a*/*an*/*the* |
+| `cutup.test.js` | Fill + repair, `generate()`, pools |
+| `regressions.test.js` | Lexicon, retags, lemmas, recase, fill shape |
+| `fixtures.js` | Shared texts (Gettysburg, moth excerpt) |
+| `helpers.js` | `analyze`, `repair`, `fillAndRepair`, … |
+
+To add a case, put it in the matching `*.test.js` (or a new
+`web/tests/*.test.js` file). Files must end in `.test.js` or Node will
+ignore them. Import fixtures and helpers, then assert with `node:test`
+and `node:assert/strict`:
+
+```js
+const { describe, it } = require("node:test");
+const assert = require("node:assert/strict");
+const { repair, repairedText } = require("./helpers");
+
+describe("subject–verb agreement", () => {
+  it("repairs they has to they have", () => {
+    assert.equal(repairedText("They has come"), "They have come");
+  });
+});
+```
+
+Shared scramble/reference passages go in `fixtures.js`. Helpers wrap the
+worker: `repair(text)` for the grammar pass, `fillAndRepair(scramble,
+reference)` for a cut-up, `worker.generate({ ... })` for the full
+pipeline. Export a new function from `web/cut-up-worker.js` if a test
+needs to call it directly.
+
 ## Source library
 
 The **Load text excerpts** panel fills the scramble and reference fields

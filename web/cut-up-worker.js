@@ -3,6 +3,7 @@ if (typeof importScripts === "function") {
 } else if (typeof require === "function" && typeof globalThis.nlp !== "function") {
   globalThis.nlp = require("./vendor/compromise.js");
 }
+const nlp = globalThis.nlp;
 
 // Compromise tags a handful of function words as content words ("beneath" and
 // "over" as Adjective, "my" as Noun). Patching its lexicon fixes them for every
@@ -13,6 +14,11 @@ nlp.plugin({
     ObjectPronoun: { isA: "Pronoun" },
     PossessivePronoun: { isA: "Pronoun" },
     Quantifier: { isA: "Determiner" },
+    // Compromise never tags we/they/you/these/those as #Plural, but they
+    // take plural agreement ("you are", "these are"). A private tag keeps
+    // Pronoun/Determiner intact - tagging them #Plural would turn them into
+    // nouns and open those slots.
+    PluralAgree: {},
   },
   words: {
     above: "Preposition", below: "Preposition", under: "Preposition",
@@ -21,6 +27,10 @@ nlp.plugin({
     beneath: "Preposition", underneath: "Preposition", inside: "Preposition",
     outside: "Preposition", atop: "Preposition", amid: "Preposition",
     amongst: "Preposition", unlike: "Preposition", despite: "Preposition",
+    round: "Preposition", around: "Preposition",
+
+    aloud: "Adverb", upstairs: "Adverb", downstairs: "Adverb",
+    indoors: "Adverb", outdoors: "Adverb",
 
     all: "Quantifier", no: "Quantifier", more: "Quantifier", less: "Quantifier",
     most: "Quantifier", many: "Quantifier", much: "Quantifier", few: "Quantifier",
@@ -28,6 +38,10 @@ nlp.plugin({
 
     me: "ObjectPronoun", him: "ObjectPronoun", them: "ObjectPronoun",
     us: "ObjectPronoun",
+
+    we: ["Pronoun", "PluralAgree"], they: ["Pronoun", "PluralAgree"],
+    you: ["Pronoun", "PluralAgree"],
+    these: ["Determiner", "PluralAgree"], those: ["Determiner", "PluralAgree"],
 
     my: "PossessivePronoun", your: "PossessivePronoun", his: "PossessivePronoun",
     her: "PossessivePronoun", its: "PossessivePronoun", our: "PossessivePronoun",
@@ -40,6 +54,7 @@ nlp.plugin({
     done: "Auxiliary",
 
     here: "There", there: "There", so: "Conjunction",
+    what: "QuestionWord",
   },
 });
 
@@ -52,20 +67,14 @@ const SLOT_FALLBACKS = {
   adjective: ["adjective"],
   adverb: ["adverb"],
 };
-const BE_FORMS = /^(?:am|is|are|was|were|be|been|being)$/i;
-const HAVE_FORMS = /^(?:have|has|had|having)$/i;
-const DO_FORMS = /^(?:do|does|did|doing)$/i;
-const BE_TABLE = {
-  present: { I: "am", singular: "is", plural: "are" },
-  past: { I: "was", singular: "was", plural: "were" },
-};
-const PLURAL_PRONOUNS = new Set(["we", "they", "you", "these", "those"]);
 const isolatedCache = new Map();
+const adverbFrameCache = new Map();
 const verbLemmaCache = new Map();
 const conjugateCache = new Map();
 const nounLemmaCache = new Map();
 const inflectNounCache = new Map();
 const inflectAdjectiveCache = new Map();
+const infinitiveCache = new Map();
 let analyzeCache = { scramble: "", reference: "", preserveLines: false, tokens: null, buckets: null };
 
 function normalizeInput(text, preserveLines) {
@@ -134,7 +143,7 @@ function analyze(text) {
         normal: term.normal,
         slot,
         closed: !isOpenSlot(slot),
-        plural: term.tags.has("Plural"),
+        plural: term.tags.has("Plural") || term.tags.has("PluralAgree"),
         possessive: term.tags.has("Possessive") && !term.tags.has("Pronoun"),
         comparative: term.tags.has("Comparative"),
         superlative: term.tags.has("Superlative"),
@@ -148,7 +157,11 @@ function analyze(text) {
   }
 
   retagMislabelledVerbs(tokens);
+  retagPossessedNouns(tokens);
+  retagMidAdverbs(tokens);
+  retagVerbAfterAuxiliary(tokens);
   retagAttributiveGerunds(tokens);
+  retagContextualPrepositions(tokens);
   return tokens;
 }
 
@@ -171,13 +184,137 @@ function retagAttributiveGerunds(tokens) {
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (token.type !== "word" || token.closed) continue;
+    const isolated = isolatedTerm(token.normal);
+    const gerundish = token.verbForm === "gerund" || isolated?.tags.has("Gerund");
+    if (!gerundish) continue;
+
     const previous = previousWord(tokens, index);
-    const next = nextWord(tokens, index);
+    const nextIndex = nextWordIndex(tokens, index);
+    const next = nextIndex === -1 ? null : tokens[nextIndex];
+    if (next && /^(?:and|or)$/i.test(next.normal)) {
+      const pairedIndex = nextWordIndex(tokens, nextIndex);
+      const paired = pairedIndex === -1 ? null : tokens[pairedIndex];
+      if (paired?.slot === "adjective") {
+        token.slot = "adjective";
+        continue;
+      }
+    }
+
     if (!previous || (previous.slot !== "determiner" && previous.slot !== "adjective")) continue;
     if (!next || (next.slot !== "noun" && next.slot !== "proper" && next.slot !== "adjective")) continue;
-    const isolated = isolatedTerm(token.normal);
-    if (token.verbForm !== "gerund" && !isolated?.tags.has("Gerund")) continue;
     token.slot = "adjective";
+  }
+}
+
+// "their lives", "the note": compromise often reads the noun as a verb in isolation.
+function retagPossessedNouns(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word" || token.slot !== "verb" || token.closed) continue;
+    const previous = previousWord(tokens, index);
+    if (!previous || (previous.slot !== "possessive" && previous.slot !== "determiner")) continue;
+    const framed = nlp(`the ${token.normal}`);
+    const term = framed.document[0]?.[1];
+    if (!term?.tags.has("Noun")) continue;
+    token.slot = "noun";
+    token.plural = term.tags.has("Plural");
+    token.closed = !isOpenSlot("noun");
+  }
+}
+
+// "will little note", "nor long remember": mid-position adverbs get tagged as
+// verbs or adjectives, which then steal the real verb's infinitive slot.
+function retagMidAdverbs(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word" || token.slot === "adverb" || token.slot === "negative") continue;
+    const previous = previousWord(tokens, index);
+    const next = nextWord(tokens, index);
+    if (!previous) continue;
+    const afterAux = previous.slot === "modal" || previous.slot === "auxiliary"
+      || previous.slot === "copula" || previous.normal === "to";
+    const afterNor = previous.normal === "nor";
+    if (!afterAux && !afterNor) continue;
+    if (!isMidAdverb(token.normal, next)) continue;
+    token.slot = "adverb";
+    token.closed = !isOpenSlot("adverb");
+  }
+}
+
+function isMidAdverb(word, next) {
+  const isolated = isolatedTerm(word);
+  if (isolated?.tags.has("Adverb")) return true;
+  if (adverbFrameTerm(word)?.tags.has("Adverb")) return true;
+  // Dual-class adjectives that compromise never lists as adverbs: "will little
+  // note", "nor long remember". After a modal they modify the following verb.
+  if (!isolated?.tags.has("Adjective") || isolated.tags.has("Verb")) return false;
+  return Boolean(next && (next.slot === "verb" || isolatedTerm(next.normal)?.tags.has("Verb")));
+}
+
+function adverbFrameTerm(word) {
+  const key = word.toLowerCase();
+  if (adverbFrameCache.has(key)) return adverbFrameCache.get(key);
+  const term = nlp(`they can ${key} go`).document[0]?.[1] || null;
+  adverbFrameCache.set(key, term);
+  return term;
+}
+
+function retagVerbAfterAuxiliary(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word") continue;
+    if (token.slot !== "modal" && token.normal !== "to" && !isDoSupport(token.normal)) continue;
+    const nextIndex = nextContentIndex(tokens, index, ["negative", "adverb"]);
+    if (nextIndex === -1) continue;
+    const next = tokens[nextIndex];
+    if (next.closed || next.slot === "verb") continue;
+    const isolated = isolatedTerm(next.normal);
+    if (!isolated?.tags.has("Verb")) continue;
+    next.slot = "verb";
+    next.verbForm = "infinitive";
+    next.closed = !isOpenSlot("verb");
+  }
+}
+
+// "leaping round the room": lexicon says Preposition, but the sentence
+// tagger still reads "round" as a noun. After a verb, before an NP, restore it.
+function retagContextualPrepositions(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word" || token.closed || token.slot === "preposition") continue;
+    if (!isolatedTerm(token.normal)?.tags.has("Preposition")) continue;
+    const previous = previousWord(tokens, index);
+    const next = nextWord(tokens, index);
+    if (!previous || (previous.slot !== "verb" && previous.slot !== "noun" && previous.slot !== "pronoun")) {
+      continue;
+    }
+    if (!next || (next.slot !== "determiner" && next.slot !== "noun" && next.slot !== "proper"
+      && next.slot !== "possessive" && next.slot !== "adjective")) {
+      continue;
+    }
+    token.slot = "preposition";
+    token.closed = true;
+  }
+}
+
+// "leaping round the room": lexicon says Preposition, but the sentence
+// tagger still reads "round" as a noun. After a verb, before an NP, restore it.
+function retagContextualPrepositions(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word" || token.closed || token.slot === "preposition") continue;
+    if (!isolatedTerm(token.normal)?.tags.has("Preposition")) continue;
+    const previous = previousWord(tokens, index);
+    const next = nextWord(tokens, index);
+    if (!previous || (previous.slot !== "verb" && previous.slot !== "noun" && previous.slot !== "pronoun")) {
+      continue;
+    }
+    if (!next || (next.slot !== "determiner" && next.slot !== "noun" && next.slot !== "proper"
+      && next.slot !== "possessive" && next.slot !== "adjective")) {
+      continue;
+    }
+    token.slot = "preposition";
+    token.closed = true;
   }
 }
 
@@ -219,6 +356,75 @@ function conjugateVerb(lemma) {
   const forms = nlp(key).verbs().conjugate()[0] || null;
   conjugateCache.set(key, forms);
   return forms;
+}
+
+// String-level conjugation, bypassing the lexicon plugin. Tagging "had" or
+// "did" as Auxiliary makes nlp(word).verbs().conjugate() treat them as
+// infinitives and invent "hads" / "dids".
+function verbTransform() {
+  return nlp.methods().two.transform.verb;
+}
+
+function infinitiveOf(word) {
+  const key = String(word || "").toLowerCase();
+  if (infinitiveCache.has(key)) return infinitiveCache.get(key);
+
+  const model = nlp.model();
+  const { toInfinitive, conjugate } = verbTransform();
+  let lemma = toInfinitive(key, model) || key;
+
+  if (lemma === key) {
+    for (const tense of ["PastTense", "Gerund", "Participle", "PresentTense"]) {
+      const candidate = toInfinitive(key, model, tense);
+      if (!candidate || candidate === key) continue;
+      const forms = conjugate(candidate, model);
+      if (Object.values(forms).some((form) => form === key)) {
+        lemma = candidate;
+        break;
+      }
+    }
+  }
+
+  infinitiveCache.set(key, lemma);
+  return lemma;
+}
+
+function auxForms(lemma) {
+  return verbTransform().conjugate(lemma, nlp.model());
+}
+
+function isDoSupport(word) {
+  const key = String(word || "").toLowerCase();
+  if (infinitiveOf(key) !== "do") return false;
+  return key !== (auxForms("do").Participle || "done").toLowerCase();
+}
+
+function isNonFiniteAux(word) {
+  const key = String(word || "").toLowerCase();
+  const lemma = infinitiveOf(key);
+  const forms = auxForms(lemma);
+  if (key === (forms.Gerund || "").toLowerCase()) return true;
+  if (key === (forms.Participle || "").toLowerCase()) return true;
+  return lemma === "be" && key === "been";
+}
+
+// Compromise's conjugate("be") only has is/was. toPresent(is) and toPast(are)
+// supply are/were. First-person present "am" is not in the model at all.
+function inflectBe(tense, person) {
+  const model = nlp.model();
+  const forms = auxForms("be");
+  if (tense === "present") {
+    if (person === "I") return "am";
+    if (person === "plural") {
+      return model.two.models.toPresent.ex[forms.PresentTense] || "are";
+    }
+    return forms.PresentTense || "is";
+  }
+  if (person === "plural") {
+    const pluralPresent = model.two.models.toPresent.ex[forms.PresentTense];
+    return (pluralPresent && model.two.models.toPast.ex[pluralPresent]) || "were";
+  }
+  return forms.PastTense || "was";
 }
 
 function nounLemma(word) {
@@ -354,15 +560,38 @@ function inflectNoun(lemma, plural, possessive) {
 
 function inflectAdjective(word, comparative, superlative) {
   if (!comparative && !superlative) return word;
-  const key = `${word.toLowerCase()}|${superlative ? "sup" : "comp"}`;
+  const lemma = adjectiveLemma(word);
+  const key = `${lemma}|${superlative ? "sup" : "comp"}`;
   if (inflectAdjectiveCache.has(key)) return inflectAdjectiveCache.get(key);
-  const doc = nlp(word);
+  const doc = nlp(lemma);
   if (!doc.adjectives().found) doc.tag("Adjective");
   if (superlative) doc.adjectives().toSuperlative();
   else doc.adjectives().toComparative();
-  const text = doc.text().trim() || word;
+  let text = doc.text().trim() || lemma;
+  // v14's conjugate only knows -er/-est. Junk like "significanter" does not
+  // re-parse as #Comparative, so fall back to more/most.
+  if (!isRealComparison(text, superlative, lemma)) {
+    text = `${superlative ? "most" : "more"} ${lemma}`;
+  }
   inflectAdjectiveCache.set(key, text);
   return text;
+}
+
+function adjectiveLemma(word) {
+  const key = String(word || "").toLowerCase().replace(/^(?:more|most)\s+/, "");
+  const doc = nlp(key);
+  if (!doc.adjectives().found) doc.tag("Adjective");
+  return doc.adjectives().conjugate()[0]?.Adjective || key;
+}
+
+function isRealComparison(text, superlative, lemma) {
+  if (!text) return false;
+  if (/^(?:more|most)\s/i.test(text)) return true;
+  const doc = nlp(text);
+  if (superlative ? doc.has("#Superlative") : doc.has("#Comparative")) return true;
+  const models = nlp.model().two.models;
+  const irregulars = superlative ? models.toSuperlative.ex : models.toComparative.ex;
+  return irregulars?.[lemma.toLowerCase()] === text.toLowerCase();
 }
 
 function inflectVerb(lemma, form, person) {
@@ -370,12 +599,22 @@ function inflectVerb(lemma, form, person) {
   if (!forms) return lemma;
 
   if (form === "gerund") return forms.Gerund || lemma;
-  if (form === "participle") return forms.Participle || forms.PastTense || lemma;
+  if (form === "participle") return participleOf(forms, lemma);
   if (form === "past") return forms.PastTense || lemma;
   if (form === "infinitive" || form === "future") return forms.Infinitive || lemma;
   return person === "singular"
     ? forms.PresentTense || forms.Infinitive || lemma
     : forms.Infinitive || lemma;
+}
+
+function participleOf(forms, lemma) {
+  if (forms.Participle) return forms.Participle;
+  if (/^be$/i.test(lemma)) return "been";
+  const past = forms.PastTense;
+  const infinitive = forms.Infinitive || lemma;
+  if (past && /(?:ed|en)$/i.test(past)) return past;
+  if (/^(?:come|become|run)$/i.test(infinitive)) return infinitive;
+  return past || infinitive;
 }
 
 function previousWord(tokens, index) {
@@ -386,10 +625,42 @@ function previousWord(tokens, index) {
 }
 
 function nextWord(tokens, index) {
+  const look = nextWordIndex(tokens, index);
+  return look === -1 ? null : tokens[look];
+}
+
+function nextWordIndex(tokens, index) {
   for (let look = index + 1; look < tokens.length; look += 1) {
     const token = tokens[look];
-    if (token.type === "word") return token;
-    if (/[.!?]/.test(token.value)) return null;
+    if (token.type === "word") return look;
+    if (/[.!?]/.test(token.value)) return -1;
+  }
+  return -1;
+}
+
+function nextContentIndex(tokens, index, skipSlots) {
+  const skip = skipSlots || [];
+  for (let look = index + 1; look < tokens.length; look += 1) {
+    const token = tokens[look];
+    if (token.type !== "word") {
+      if (/[.!?]/.test(token.value)) return -1;
+      continue;
+    }
+    if (skip.includes(token.slot)) continue;
+    return look;
+  }
+  return -1;
+}
+
+function previousGovernor(tokens, index) {
+  for (let look = index - 1; look >= 0; look -= 1) {
+    const token = tokens[look];
+    if (token.type !== "word") {
+      if (/[.!?]/.test(token.value)) return null;
+      continue;
+    }
+    if (token.slot === "negative" || token.slot === "adverb") continue;
+    return token;
   }
   return null;
 }
@@ -410,20 +681,58 @@ function nextHeadNoun(tokens, index) {
 }
 
 // A verb's shape depends on what precedes it: "to spread", "can spread",
-// "is spread", "has spread", "of spreading".
+// "is spread", "has spread", "of spreading". Negatives and mid-position
+// adverbs sit between the governor and the verb: "can not dedicate",
+// "can never forget", "will little note". Coordinated verbs share a
+// governor across and/or/nor, even with a phrase in between: "walked
+// across the room, and put". Do not copy tense onto a gerund complement
+// ("went laughing", "said, arranging").
 function contextualVerbForm(tokens, index, fallbackForm) {
-  const previous = previousWord(tokens, index);
-  if (!previous) return fallbackForm;
-  if (previous.normal === "to" || previous.slot === "modal") return "infinitive";
-  if (previous.slot === "copula" && !/^(?:be|being)$/i.test(previous.normal)) {
-    return "participle";
+  let sawCoordinator = false;
+
+  for (let look = index - 1; look >= 0; look -= 1) {
+    const token = tokens[look];
+    if (token.type !== "word") {
+      if (/[.!?]/.test(token.value)) break;
+      continue;
+    }
+    if (token.normal === "to" || token.slot === "modal") return "infinitive";
+    if (token.slot === "negative" || token.slot === "adverb") continue;
+    if (token.slot === "copula") {
+      const forms = auxForms(infinitiveOf(token.normal));
+      const form = token.normal;
+      if (form !== (forms.Infinitive || "").toLowerCase()
+        && form !== (forms.Gerund || "").toLowerCase()) {
+        return "participle";
+      }
+    }
+    if (token.slot === "auxiliary") {
+      const lemma = infinitiveOf(token.normal);
+      if (lemma === "have") return "participle";
+      if (lemma === "do") return "infinitive";
+    }
+    if (token.slot === "conjunction" && /^(?:and|or|nor)$/i.test(token.normal)) {
+      sawCoordinator = true;
+      continue;
+    }
+    if (token.slot === "preposition") {
+      if (sawCoordinator) continue;
+      return "gerund";
+    }
+    if (token.slot === "verb") {
+      if (sawCoordinator) return contextualVerbForm(tokens, look, token.verbForm || fallbackForm);
+      return fallbackForm;
+    }
+    if (sawCoordinator && isCoordSkip(token)) continue;
+    return fallbackForm;
   }
-  if (previous.slot === "auxiliary") {
-    if (HAVE_FORMS.test(previous.normal)) return "participle";
-    if (DO_FORMS.test(previous.normal)) return "infinitive";
-  }
-  if (previous.slot === "preposition") return "gerund";
   return fallbackForm;
+}
+
+function isCoordSkip(token) {
+  return token.slot === "noun" || token.slot === "proper" || token.slot === "determiner"
+    || token.slot === "adjective" || token.slot === "possessive" || token.slot === "particle"
+    || token.slot === "pronoun" || token.slot === "there";
 }
 
 function sentenceStartIndex(tokens, index) {
@@ -437,32 +746,67 @@ function sentenceStartIndex(tokens, index) {
 
 // Read the subject from our own tokens rather than re-parsing the draft as
 // text: compromise reads a sentence-initial "Transports" as a verb, which used
-// to leave the agreement code with no subject at all.
-function subjectToken(tokens, verbIndex) {
+// to leave the agreement code with no subject at all. Walk backward from the
+// verb so "what we say" agrees with "we", not the first noun in the sentence.
+function subjectToken(tokens, verbIndex, seen) {
+  const visiting = seen || new Set();
+  if (visiting.has(verbIndex)) return null;
+  visiting.add(verbIndex);
   const start = sentenceStartIndex(tokens, verbIndex);
-  let candidate = null;
+  let skippedRelative = false;
 
-  for (let index = start; index < verbIndex; index += 1) {
+  for (let index = verbIndex - 1; index >= start; index -= 1) {
     const token = tokens[index];
     if (token.type !== "word") continue;
-    if (token.slot === "pronoun" || token.slot === "noun" || token.slot === "proper") {
-      return token;
+
+    if (token.slot === "verb") {
+      return subjectToken(tokens, index, visiting);
     }
-    if (token.slot === "preposition" || token.slot === "conjunction") {
-      candidate = null;
+
+    if (token.slot === "question" && /^(?:who|which)$/i.test(token.normal)) {
+      skippedRelative = true;
       continue;
     }
-    if (!candidate && !token.closed) candidate = token;
+
+    if (!isNominal(token)) continue;
+    if (!skippedRelative && token.slot !== "pronoun" && governedByPreposition(tokens, index, start)) continue;
+    return token;
   }
 
-  return candidate;
+  return null;
+}
+
+function isNominal(token) {
+  if (token.slot === "pronoun" || token.slot === "noun" || token.slot === "proper") return true;
+  return token.slot === "determiner" && token.plural;
+}
+
+function governedByPreposition(tokens, nounIndex, start) {
+  for (let look = nounIndex - 1; look >= start; look -= 1) {
+    const token = tokens[look];
+    if (token.type !== "word") continue;
+    if (token.slot === "adjective" || token.slot === "determiner"
+      || token.slot === "possessive" || token.slot === "adverb") {
+      continue;
+    }
+    return token.slot === "preposition";
+  }
+  return false;
 }
 
 function personOf(token) {
   if (!token) return "singular";
   if (token.normal === "i") return "I";
-  if (PLURAL_PRONOUNS.has(token.normal)) return "plural";
   return token.plural ? "plural" : "singular";
+}
+
+function finiteTense(token) {
+  if (token.verbForm === "past") return "past";
+  const lemma = infinitiveOf(token.normal);
+  const forms = auxForms(lemma);
+  if (token.normal === (forms.PastTense || "").toLowerCase()) return "past";
+  if (lemma === "be" && token.normal === inflectBe("past", "plural")) return "past";
+  return "present";
 }
 
 function startsWithVowelSound(normal) {
@@ -550,26 +894,24 @@ function repairTokens(tokens) {
     }
 
     if (token.slot === "copula" || token.slot === "auxiliary") {
-      const previous = previousWord(repaired, index);
+      const previous = previousGovernor(repaired, index);
       const finite = !previous || (previous.normal !== "to" && previous.slot !== "modal");
 
+      const lemma = infinitiveOf(token.normal);
+
       if (!finite) {
-        if (BE_FORMS.test(token.normal)) setWord(token, "be");
-        else if (HAVE_FORMS.test(token.normal)) setWord(token, "have");
-        else if (DO_FORMS.test(token.normal)) setWord(token, "do");
+        if (lemma === "be" || lemma === "have" || lemma === "do") setWord(token, lemma);
         continue;
       }
 
-      if (/^(?:been|being|having|doing|done)$/i.test(token.normal)) continue;
+      if (isNonFiniteAux(token.normal)) continue;
 
       const person = personOf(subjectToken(repaired, index));
-      const tense = token.verbForm === "past" ? "past" : "present";
-      if (BE_FORMS.test(token.normal)) {
-        setWord(token, BE_TABLE[tense][person] || BE_TABLE[tense].singular);
-      } else if (HAVE_FORMS.test(token.normal)) {
-        setWord(token, tense === "past" ? "had" : person === "singular" ? "has" : "have");
-      } else if (DO_FORMS.test(token.normal)) {
-        setWord(token, tense === "past" ? "did" : person === "singular" ? "does" : "do");
+      const tense = finiteTense(token);
+      if (lemma === "be") {
+        setWord(token, inflectBe(tense, person));
+      } else if (lemma === "have" || lemma === "do") {
+        setWord(token, inflectVerb(lemma, tense === "past" ? "past" : "present", person));
       }
     }
   }
@@ -730,5 +1072,9 @@ if (typeof importScripts === "function") {
 }
 
 if (typeof module === "object" && module.exports) {
-  module.exports = { generate, verbLemma, conjugateVerb, buildPool, analyze, normalizeInput };
+  module.exports = {
+    generate, verbLemma, conjugateVerb, buildPool, analyze, normalizeInput,
+    repairTokens, inflectAdjective, inflectVerb, fillDraft, subjectToken,
+    contextualVerbForm, personOf, tokensToText, infinitiveOf, inflectNoun,
+  };
 }
