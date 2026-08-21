@@ -16,8 +16,12 @@ const elements = {
   preserveLines: document.querySelector("#preserve-lines"),
   allowReuse: document.querySelector("#allow-reuse"),
   showStructure: document.querySelector("#show-structure"),
+  showHistory: document.querySelector("#show-history"),
   generate: document.querySelector("#generate-button"),
   again: document.querySelector("#again-button"),
+  history: document.querySelector("#history"),
+  historyLabel: document.querySelector("#history-label"),
+  historyList: document.querySelector("#history-list"),
   copy: document.querySelector("#copy-button"),
   placeholder: document.querySelector("#result-placeholder"),
   output: document.querySelector("#output"),
@@ -31,14 +35,17 @@ const elements = {
 
 const worker = new Worker("cut-up-worker.js");
 const WORD_PATTERN = /[\p{L}\p{M}]+(?:['\u2019\-][\p{L}\p{M}]+)*/gu;
+const MAX_HISTORY = 20;
 const LOAD_LABELS = {
   scramble: "Load scramble",
   reference: "Load reference",
   both: "Load both",
 };
-let dictionaryReady = false;
+let grammarReady = false;
 let requestId = 0;
 let latestOutput = "";
+let latestTokens = [];
+let outputHistory = [];
 let textCatalog = null;
 let sourceLoading = false;
 let gutenbergProxyReady = false;
@@ -56,7 +63,8 @@ function updateInputs() {
   const referenceWords = wordCount(elements.reference.value);
   elements.scrambleCount.textContent = formatCount(scrambleWords);
   elements.referenceCount.textContent = formatCount(referenceWords);
-  elements.generate.disabled = !dictionaryReady || !scrambleWords || !referenceWords;
+  elements.generate.disabled =
+    !grammarReady || !scrambleWords || !referenceWords;
 }
 
 function setLoading(isLoading) {
@@ -68,8 +76,12 @@ function setLoading(isLoading) {
 }
 
 function requestCut() {
-  if (!dictionaryReady || !wordCount(elements.scramble.value)
-    || !wordCount(elements.reference.value)) return;
+  if (
+    !grammarReady ||
+    !wordCount(elements.scramble.value) ||
+    !wordCount(elements.reference.value)
+  )
+    return;
 
   setLoading(true);
   requestId += 1;
@@ -83,10 +95,9 @@ function requestCut() {
   });
 }
 
-function showResult(message) {
-  latestOutput = message.output;
+function renderOutput(outputTokens) {
   elements.output.replaceChildren(
-    ...message.outputTokens.map((token) => {
+    ...outputTokens.map((token) => {
       if (token.type === "separator") {
         return document.createTextNode(token.value);
       }
@@ -106,6 +117,102 @@ function showResult(message) {
     }),
   );
   elements.output.classList.toggle("reveal", elements.showStructure.checked);
+}
+
+function rememberCurrentOutput() {
+  if (!latestOutput) {
+    return;
+  }
+
+  if (outputHistory[0]?.output === latestOutput) {
+    return;
+  }
+
+  outputHistory.unshift({
+    output: latestOutput,
+    outputTokens: latestTokens,
+  });
+  if (outputHistory.length > MAX_HISTORY) {
+    outputHistory.length = MAX_HISTORY;
+  }
+}
+
+function renderHistory() {
+  const count = outputHistory.length;
+  elements.showHistory.disabled = count === 0;
+  elements.historyLabel.textContent =
+    count > 0 ? `History (${count})` : "History";
+
+  if (count === 0) {
+    elements.showHistory.checked = false;
+    elements.history.hidden = true;
+    elements.historyList.replaceChildren();
+    return;
+  }
+
+  elements.historyList.replaceChildren(
+    ...outputHistory.map((entry, index) => {
+      const item = document.createElement("li");
+      item.className = "history-item";
+
+      const text = document.createElement("p");
+      text.className = "history-text";
+      text.textContent = entry.output;
+
+      const actions = document.createElement("div");
+      actions.className = "history-item-actions";
+
+      const restore = document.createElement("button");
+      restore.type = "button";
+      restore.textContent = "Restore";
+      restore.addEventListener("click", () => restoreHistory(index));
+
+      const copy = document.createElement("button");
+      copy.type = "button";
+      copy.textContent = "Copy";
+      copy.addEventListener("click", () => copyText(entry.output, copy, "Copy"));
+
+      actions.append(restore, copy);
+      item.append(text, actions);
+      return item;
+    }),
+  );
+}
+
+function restoreHistory(index) {
+  const entry = outputHistory[index];
+  if (!entry) {
+    return;
+  }
+
+  outputHistory.splice(index, 1);
+  rememberCurrentOutput();
+  latestOutput = entry.output;
+  latestTokens = entry.outputTokens;
+  renderOutput(latestTokens);
+  renderHistory();
+}
+
+async function copyText(text, button, idleLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copied";
+    window.setTimeout(() => {
+      button.textContent = idleLabel;
+    }, 1400);
+  } catch {
+    button.textContent = "Copy failed";
+  }
+}
+
+function showResult(message) {
+  if (latestOutput !== message.output) {
+    rememberCurrentOutput();
+  }
+  latestOutput = message.output;
+  latestTokens = message.outputTokens;
+  renderOutput(latestTokens);
+  renderHistory();
   elements.placeholder.hidden = true;
   elements.output.hidden = false;
   elements.again.disabled = false;
@@ -307,9 +414,9 @@ async function checkGutenbergProxy() {
 worker.addEventListener("message", (event) => {
   const message = event.data;
   if (message.type === "ready") {
-    dictionaryReady = true;
+    grammarReady = true;
     elements.status.classList.add("ready");
-    elements.statusText.textContent = `${message.entries.toLocaleString()} words ready`;
+    elements.statusText.textContent = "ready";
     updateInputs();
     return;
   }
@@ -321,9 +428,9 @@ worker.addEventListener("message", (event) => {
 
   if (message.type === "load-error") {
     elements.status.classList.add("error");
-    elements.statusText.textContent = "Dictionary unavailable";
+    elements.statusText.textContent = "Grammar unavailable";
     elements.placeholder.textContent =
-      "The dictionary could not load. Serve the project over HTTP instead of opening the file directly.";
+      "Compromise could not load. Serve the project over HTTP instead of opening the file directly.";
     return;
   }
 
@@ -351,16 +458,12 @@ elements.showStructure.addEventListener("change", () => {
   elements.output.classList.toggle("reveal", elements.showStructure.checked);
 });
 
-elements.copy.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(latestOutput);
-    elements.copy.textContent = "Copied";
-    window.setTimeout(() => {
-      elements.copy.textContent = "Copy";
-    }, 1400);
-  } catch {
-    elements.copy.textContent = "Copy failed";
-  }
+elements.showHistory.addEventListener("change", () => {
+  elements.history.hidden = !elements.showHistory.checked;
+});
+
+elements.copy.addEventListener("click", () => {
+  copyText(latestOutput, elements.copy, "Copy");
 });
 
 elements.sourceLibrary.addEventListener("change", () => {

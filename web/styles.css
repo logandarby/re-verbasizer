@@ -361,7 +361,75 @@ button:disabled {
 
 .result-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+}
+
+.result-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 4px;
+  cursor: pointer;
+  font: 400 10px "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.result-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.result-toggle-track {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.result-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background: var(--muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.result-toggle:hover .result-toggle-track {
+  border-color: var(--ink);
+}
+
+.result-toggle input:checked + .result-toggle-track {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.result-toggle input:checked + .result-toggle-track .result-toggle-knob {
+  background: #fff;
+  transform: translateX(12px);
+}
+
+.result-toggle input:focus-visible + .result-toggle-track {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.result-toggle:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.result-toggle:has(input:disabled):hover .result-toggle-track {
+  border-color: var(--line);
 }
 
 .result-actions button {
@@ -386,6 +454,70 @@ button:disabled {
   font-size: clamp(20px, 2.5vw, 28px);
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+.history {
+  max-height: min(420px, 50vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--line);
+}
+
+.history[hidden] {
+  display: none;
+}
+
+.history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 40px;
+  border-top: 1px solid var(--line);
+}
+
+.history-item:first-child {
+  border-top: 0;
+}
+
+.history-text {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #4c4943;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.history-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.history-item-actions button {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  font: 400 10px "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  letter-spacing: 0.05em;
+}
+
+.history-item-actions button:hover,
+.result-actions button:not(:disabled):hover {
+  border-color: var(--ink);
 }
 
 .word-unit {
@@ -429,6 +561,10 @@ button:disabled {
   color: #4c4943;
   font-size: 15px;
   line-height: 1.8;
+}
+
+.about p + p {
+  margin-top: 1.15em;
 }
 
 .about a {
@@ -523,6 +659,12 @@ footer {
   }
 
   .output {
+    padding-right: 22px;
+    padding-left: 22px;
+  }
+
+  .history-item {
+    flex-direction: column;
     padding-right: 22px;
     padding-left: 22px;
   }

@@ -7,12 +7,13 @@
       { "id": "technology", "label": "Technology" }
     ],
     "gutenberg": [
-      { "id": "modern", "label": "Modern Classics (1900–1930)" },
-      { "id": "horror", "label": "Horror & Gothic" },
+      { "id": "novels", "label": "Novels (1900–1930)" },
+      { "id": "mystery", "label": "Mystery & Crime" },
+      { "id": "horror", "label": "Horror & Weird" },
       { "id": "scifi", "label": "Science Fiction" },
       { "id": "adventure", "label": "Adventure" },
       { "id": "poetry", "label": "Poetry" },
-      { "id": "philosophy", "label": "Philosophy & Essays" }
+      { "id": "essays", "label": "Essays & Ideas" }
     ],
     "wikisource": [
       { "id": "poetry", "label": "Poetry" },
@@ -152,7 +153,7 @@
     {
       "id": "g-64317",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 64317,
       "title": "The Great Gatsby",
       "author": "F. Scott Fitzgerald"
@@ -160,39 +161,15 @@
     {
       "id": "g-67138",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 67138,
       "title": "The Sun Also Rises",
       "author": "Ernest Hemingway"
     },
     {
-      "id": "g-805",
-      "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 805,
-      "title": "This Side of Paradise",
-      "author": "F. Scott Fitzgerald"
-    },
-    {
-      "id": "g-9830",
-      "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 9830,
-      "title": "The Beautiful and Damned",
-      "author": "F. Scott Fitzgerald"
-    },
-    {
-      "id": "g-541",
-      "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 541,
-      "title": "The Age of Innocence",
-      "author": "Edith Wharton"
-    },
-    {
       "id": "g-71865",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 71865,
       "title": "Mrs. Dalloway",
       "author": "Virginia Woolf"
@@ -200,7 +177,7 @@
     {
       "id": "g-4300",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 4300,
       "title": "Ulysses",
       "author": "James Joyce"
@@ -208,154 +185,226 @@
     {
       "id": "g-4217",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 4217,
       "title": "A Portrait of the Artist as a Young Man",
       "author": "James Joyce"
     },
     {
+      "id": "g-2814",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 2814,
+      "title": "Dubliners",
+      "author": "James Joyce"
+    },
+    {
+      "id": "g-541",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 541,
+      "title": "The Age of Innocence",
+      "author": "Edith Wharton"
+    },
+    {
+      "id": "g-284",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 284,
+      "title": "The House of Mirth",
+      "author": "Edith Wharton"
+    },
+    {
       "id": "g-543",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 543,
       "title": "Main Street",
       "author": "Sinclair Lewis"
     },
     {
-      "id": "g-1156",
-      "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 1156,
-      "title": "Babbitt",
-      "author": "Sinclair Lewis"
-    },
-    {
       "id": "g-61221",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 61221,
       "title": "A Passage to India",
       "author": "E. M. Forster"
     },
     {
-      "id": "g-69087",
+      "id": "g-2641",
       "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 69087,
-      "title": "The Murder of Roger Ackroyd",
-      "author": "Agatha Christie"
+      "category": "novels",
+      "gutenbergId": 2641,
+      "title": "A Room with a View",
+      "author": "E. M. Forster"
     },
     {
       "id": "g-5200",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 5200,
       "title": "The Metamorphosis",
       "author": "Franz Kafka"
     },
     {
-      "id": "g-7849",
+      "id": "g-242",
       "library": "gutenberg",
-      "category": "modern",
-      "gutenbergId": 7849,
-      "title": "The Trial",
-      "author": "Franz Kafka"
+      "category": "novels",
+      "gutenbergId": 242,
+      "title": "My Ántonia",
+      "author": "Willa Cather"
+    },
+    {
+      "id": "g-416",
+      "library": "gutenberg",
+      "category": "novels",
+      "gutenbergId": 416,
+      "title": "Winesburg, Ohio",
+      "author": "Sherwood Anderson"
     },
     {
       "id": "g-140",
       "library": "gutenberg",
-      "category": "modern",
+      "category": "novels",
       "gutenbergId": 140,
       "title": "The Jungle",
       "author": "Upton Sinclair"
     },
     {
-      "id": "g-345",
+      "id": "g-69087",
       "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 345,
-      "title": "Dracula",
-      "author": "Bram Stoker"
+      "category": "mystery",
+      "gutenbergId": 69087,
+      "title": "The Murder of Roger Ackroyd",
+      "author": "Agatha Christie"
     },
     {
-      "id": "g-84",
+      "id": "g-863",
       "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 84,
-      "title": "Frankenstein",
-      "author": "Mary Shelley"
+      "category": "mystery",
+      "gutenbergId": 863,
+      "title": "The Mysterious Affair at Styles",
+      "author": "Agatha Christie"
     },
     {
-      "id": "g-43",
+      "id": "g-61168",
       "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 43,
-      "title": "Dr Jekyll and Mr Hyde",
-      "author": "Robert Louis Stevenson"
+      "category": "mystery",
+      "gutenbergId": 61168,
+      "title": "The Man in the Brown Suit",
+      "author": "Agatha Christie"
     },
     {
-      "id": "g-2148",
+      "id": "g-58820",
       "library": "gutenberg",
-      "category": "horror",
-      "gutenbergId": 2148,
-      "title": "The Legend of Sleepy Hollow",
-      "author": "Washington Irving"
+      "category": "mystery",
+      "gutenbergId": 58820,
+      "title": "Whose Body?",
+      "author": "Dorothy L. Sayers"
     },
     {
-      "id": "g-35",
+      "id": "g-558",
+      "library": "gutenberg",
+      "category": "mystery",
+      "gutenbergId": 558,
+      "title": "The Thirty-Nine Steps",
+      "author": "John Buchan"
+    },
+    {
+      "id": "g-175",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 175,
+      "title": "The Phantom of the Opera",
+      "author": "Gaston Leroux"
+    },
+    {
+      "id": "g-68283",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 68283,
+      "title": "The Call of Cthulhu",
+      "author": "H. P. Lovecraft"
+    },
+    {
+      "id": "g-50133",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 50133,
+      "title": "The Dunwich Horror",
+      "author": "H. P. Lovecraft"
+    },
+    {
+      "id": "g-31469",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 31469,
+      "title": "The Shunned House",
+      "author": "H. P. Lovecraft"
+    },
+    {
+      "id": "g-10002",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 10002,
+      "title": "The House on the Borderland",
+      "author": "William Hope Hodgson"
+    },
+    {
+      "id": "g-11438",
+      "library": "gutenberg",
+      "category": "horror",
+      "gutenbergId": 11438,
+      "title": "The Willows",
+      "author": "Algernon Blackwood"
+    },
+    {
+      "id": "g-1013",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 35,
-      "title": "The Time Machine",
+      "gutenbergId": 1013,
+      "title": "The First Men in the Moon",
       "author": "H. G. Wells"
     },
     {
-      "id": "g-5230",
+      "id": "g-1059",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 5230,
-      "title": "The Invisible Man",
+      "gutenbergId": 1059,
+      "title": "The World Set Free",
       "author": "H. G. Wells"
     },
     {
-      "id": "g-164",
+      "id": "g-62",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 164,
-      "title": "Twenty Thousand Leagues Under the Sea",
-      "author": "Jules Verne"
+      "gutenbergId": 62,
+      "title": "A Princess of Mars",
+      "author": "Edgar Rice Burroughs"
     },
     {
-      "id": "g-36",
+      "id": "g-139",
       "library": "gutenberg",
       "category": "scifi",
-      "gutenbergId": 36,
-      "title": "The War of the Worlds",
-      "author": "H. G. Wells"
+      "gutenbergId": 139,
+      "title": "The Lost World",
+      "author": "Arthur Conan Doyle"
     },
     {
-      "id": "g-120",
+      "id": "g-32",
       "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 120,
-      "title": "Treasure Island",
-      "author": "Robert Louis Stevenson"
+      "category": "scifi",
+      "gutenbergId": 32,
+      "title": "Herland",
+      "author": "Charlotte Perkins Gilman"
     },
     {
-      "id": "g-766",
+      "id": "g-20869",
       "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 766,
-      "title": "Moby-Dick",
-      "author": "Herman Melville"
-    },
-    {
-      "id": "g-74",
-      "library": "gutenberg",
-      "category": "adventure",
-      "gutenbergId": 74,
-      "title": "The Adventures of Tom Sawyer",
-      "author": "Mark Twain"
+      "category": "scifi",
+      "gutenbergId": 20869,
+      "title": "The Skylark of Space",
+      "author": "E. E. Smith"
     },
     {
       "id": "g-215",
@@ -366,52 +415,164 @@
       "author": "Jack London"
     },
     {
-      "id": "g-1322",
+      "id": "g-910",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 910,
+      "title": "White Fang",
+      "author": "Jack London"
+    },
+    {
+      "id": "g-1074",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 1074,
+      "title": "The Sea-Wolf",
+      "author": "Jack London"
+    },
+    {
+      "id": "g-78",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 78,
+      "title": "Tarzan of the Apes",
+      "author": "Edgar Rice Burroughs"
+    },
+    {
+      "id": "g-60",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 60,
+      "title": "The Scarlet Pimpernel",
+      "author": "Baroness Orczy"
+    },
+    {
+      "id": "g-16",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 16,
+      "title": "Peter Pan",
+      "author": "J. M. Barrie"
+    },
+    {
+      "id": "g-2226",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 2226,
+      "title": "Kim",
+      "author": "Rudyard Kipling"
+    },
+    {
+      "id": "g-1965",
+      "library": "gutenberg",
+      "category": "adventure",
+      "gutenbergId": 1965,
+      "title": "Captain Blood",
+      "author": "Rafael Sabatini"
+    },
+    {
+      "id": "g-1321",
       "library": "gutenberg",
       "category": "poetry",
-      "gutenbergId": 1322,
-      "title": "Leaves of Grass",
-      "author": "Walt Whitman"
+      "gutenbergId": 1321,
+      "title": "The Waste Land",
+      "author": "T. S. Eliot"
     },
     {
-      "id": "g-1367",
+      "id": "g-1459",
       "library": "gutenberg",
       "category": "poetry",
-      "gutenbergId": 1367,
-      "title": "Selected Poems of Oscar Wilde",
-      "author": "Oscar Wilde"
+      "gutenbergId": 1459,
+      "title": "Prufrock and Other Observations",
+      "author": "T. S. Eliot"
     },
     {
-      "id": "g-1065",
+      "id": "g-1280",
       "library": "gutenberg",
       "category": "poetry",
-      "gutenbergId": 1065,
-      "title": "Poems of Emily Dickinson",
-      "author": "Emily Dickinson"
+      "gutenbergId": 1280,
+      "title": "Spoon River Anthology",
+      "author": "Edgar Lee Masters"
     },
     {
-      "id": "g-1232",
+      "id": "g-3026",
       "library": "gutenberg",
-      "category": "philosophy",
-      "gutenbergId": 1232,
-      "title": "The Prince",
-      "author": "Niccolò Machiavelli"
+      "category": "poetry",
+      "gutenbergId": 3026,
+      "title": "North of Boston",
+      "author": "Robert Frost"
     },
     {
-      "id": "g-205",
+      "id": "g-3021",
       "library": "gutenberg",
-      "category": "philosophy",
-      "gutenbergId": 205,
-      "title": "Walden",
-      "author": "Henry David Thoreau"
+      "category": "poetry",
+      "gutenbergId": 3021,
+      "title": "A Boy's Will",
+      "author": "Robert Frost"
     },
     {
-      "id": "g-1497",
+      "id": "g-109",
       "library": "gutenberg",
-      "category": "philosophy",
-      "gutenbergId": 1497,
-      "title": "The Republic",
-      "author": "Plato"
+      "category": "poetry",
+      "gutenbergId": 109,
+      "title": "Renascence and Other Poems",
+      "author": "Edna St. Vincent Millay"
+    },
+    {
+      "id": "g-408",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 408,
+      "title": "The Souls of Black Folk",
+      "author": "W. E. B. Du Bois"
+    },
+    {
+      "id": "g-5827",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 5827,
+      "title": "The Problems of Philosophy",
+      "author": "Bertrand Russell"
+    },
+    {
+      "id": "g-25447",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 25447,
+      "title": "Mysticism and Logic",
+      "author": "Bertrand Russell"
+    },
+    {
+      "id": "g-5116",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 5116,
+      "title": "Pragmatism",
+      "author": "William James"
+    },
+    {
+      "id": "g-621",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 621,
+      "title": "The Varieties of Religious Experience",
+      "author": "William James"
+    },
+    {
+      "id": "g-852",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 852,
+      "title": "Democracy and Education",
+      "author": "John Dewey"
+    },
+    {
+      "id": "g-6456",
+      "library": "gutenberg",
+      "category": "essays",
+      "gutenbergId": 6456,
+      "title": "Public Opinion",
+      "author": "Walter Lippmann"
     },
     {
       "id": "ws-raven",
@@ -425,7 +586,7 @@
       "id": "ws-ozymandias",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Ozymandias (Shelley)",
+      "page": "Rosalind and Helen, A Modern Eclogue (1819)/Sonnet",
       "title": "Ozymandias",
       "author": "Percy Bysshe Shelley"
     },
@@ -433,7 +594,7 @@
       "id": "ws-sonnet18",
       "library": "wikisource",
       "category": "poetry",
-      "page": "Sonnet 18 (Shakespeare)",
+      "page": "Shake-speares Sonnets, Never before Imprinted/Sonnet 18",
       "title": "Sonnet 18",
       "author": "William Shakespeare"
     },
@@ -441,7 +602,7 @@
       "id": "ws-if",
       "library": "wikisource",
       "category": "poetry",
-      "page": "If—",
+      "page": "Rewards and Fairies/If—",
       "title": "If—",
       "author": "Rudyard Kipling"
     },
@@ -449,8 +610,40 @@
       "id": "ws-road",
       "library": "wikisource",
       "category": "poetry",
-      "page": "The Road Not Taken",
+      "page": "Mountain Interval/The Road Not Taken",
       "title": "The Road Not Taken",
+      "author": "Robert Frost"
+    },
+    {
+      "id": "ws-prufrock",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "Prufrock and Other Observations/The Love Song of J. Alfred Prufrock",
+      "title": "The Love Song of J. Alfred Prufrock",
+      "author": "T. S. Eliot"
+    },
+    {
+      "id": "ws-colossus",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "The New Colossus",
+      "title": "The New Colossus",
+      "author": "Emma Lazarus"
+    },
+    {
+      "id": "ws-invictus",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "Oxford Book of English Verse 1250-1900/Invictus",
+      "title": "Invictus",
+      "author": "William Ernest Henley"
+    },
+    {
+      "id": "ws-fire",
+      "library": "wikisource",
+      "category": "poetry",
+      "page": "American Poetry 1922/Fire and Ice",
+      "title": "Fire and Ice",
       "author": "Robert Frost"
     },
     {
@@ -465,9 +658,33 @@
       "id": "ws-declaration",
       "library": "wikisource",
       "category": "speeches",
-      "page": "United States Declaration of Independence",
+      "page": "United States Declaration of Independence (engrossed copy)",
       "title": "Declaration of Independence",
       "author": "Thomas Jefferson et al."
+    },
+    {
+      "id": "ws-douglass",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "What to the Slave Is the Fourth of July?",
+      "title": "What to the Slave Is the Fourth of July?",
+      "author": "Frederick Douglass"
+    },
+    {
+      "id": "ws-truth",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "Ain't I a Woman?",
+      "title": "Ain't I a Woman?",
+      "author": "Sojourner Truth"
+    },
+    {
+      "id": "ws-fdr",
+      "library": "wikisource",
+      "category": "speeches",
+      "page": "Franklin Delano Roosevelt's Eighth State of the Union Address",
+      "title": "The Four Freedoms",
+      "author": "Franklin D. Roosevelt"
     },
     {
       "id": "ws-solitude",
@@ -481,7 +698,7 @@
       "id": "ws-civil",
       "library": "wikisource",
       "category": "essays",
-      "page": "Resistance to Civil Government (Thoreau)",
+      "page": "Aesthetic Papers/Resistance to Civil Government",
       "title": "Civil Disobedience",
       "author": "Henry David Thoreau"
     }

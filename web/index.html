@@ -1,25 +1,41 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Re-verbasizer</title>
     <meta
       name="description"
-      content="Cut up one text using the grammatical structure of another."
+      content="A cut-up writing tool. Keep the grammar of one text and fill it with words from another. Inspired by William S. Burroughs and David Bowie's Verbasizer."
     />
-    <title>The Verbasizer</title>
+    <meta name="author" content="Logan Darby" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f7f7f5" />
+    <meta property="og:title" content="The Re-verbasizer" />
+    <meta
+      property="og:description"
+      content="Keep the grammar of one text and fill it with words from another."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="The Re-verbasizer" />
+    <meta
+      name="twitter:description"
+      content="Keep the grammar of one text and fill it with words from another."
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="#" aria-label="The Verbasizer home"
-        >The Verbasizer</a
+      <a class="wordmark" href="#" aria-label="The Re-verbasizer home"
+        >The Re-verbasizer</a
       >
       <div class="header-meta">
         <a class="about-link" href="#about">About</a>
         <div class="dictionary-status" id="dictionary-status" role="status">
           <span class="status-dot" aria-hidden="true"></span>
-          <span id="status-text">Loading dictionary...</span>
+          <span id="status-text">Loading grammar...</span>
         </div>
       </div>
     </header>
@@ -132,16 +148,31 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
             <input id="preserve-lines" type="checkbox" />
             <span>Preserve line breaks</span>
           </label>
-          <label class="option">
-            <input id="show-structure" type="checkbox" />
-            <span>Reveal structure</span>
-          </label>
         </div>
 
         <section class="result" id="result-panel" aria-live="polite">
           <div class="result-heading">
             <span>Output</span>
             <div class="result-actions">
+              <label class="result-toggle">
+                <input id="show-structure" type="checkbox" />
+                <span class="result-toggle-track" aria-hidden="true">
+                  <span class="result-toggle-knob"></span>
+                </span>
+                <span>Reveal structure</span>
+              </label>
+              <label class="result-toggle">
+                <input
+                  id="show-history"
+                  type="checkbox"
+                  disabled
+                  aria-controls="history"
+                />
+                <span class="result-toggle-track" aria-hidden="true">
+                  <span class="result-toggle-knob"></span>
+                </span>
+                <span id="history-label">History</span>
+              </label>
               <button id="again-button" type="button" disabled>
                 Shuffle again
               </button>
@@ -152,21 +183,37 @@ I open the narrow door and walk into the silent room. The light moves slowly acr
             Your reassembled text will appear here.
           </p>
           <div class="output" id="output" hidden></div>
+          <div class="history" id="history" hidden>
+            <ol class="history-list" id="history-list"></ol>
+          </div>
         </section>
       </section>
 
       <section class="about" id="about">
         <h2>About</h2>
         <p>
-          The Verbasizer is inspired by the cut-up writing of William S.
-          Burroughs, author of <cite>Nova Express</cite>, and by David Bowie's
-          original Verbasizer software, developed with Brian Eno and Ty Roberts.
-          This version identifies the parts of speech in a reference text, then
-          replaces them with matching words from the scramble text while keeping
-          the reference text's punctuation and basic structure. It is an
-          independent project; see
-          <a href="https://verbasizer.com" rel="external">verbasizer.com</a>
-          for another web-based homage to the original software.
+          Put the words you want to use in the scramble box. Put the passage
+          whose sentence structure you want to keep in the reference box. You
+          can paste both, or open Load text excerpts and take a piece from
+          Wikipedia, Project Gutenberg, or Wikisource. Then hit Generate.
+        </p>
+        <p>
+          The reference keeps its word order, punctuation, and common words
+          like “the,” “of,” “and,” and “is.” Nouns, verbs, adjectives, and
+          adverbs are replaced with words from the scramble. Those replacements
+          are then adjusted to match number and tense. A few drafts are scored
+          and the most grammatical one is shown. Use Preserve line breaks for
+          poetry. Shuffle again for another version.
+        </p>
+        <p>
+          The Re-verbasizer is inspired by the cut-up writing of William S.
+          Burroughs, including <cite>Nova Express</cite>, and by David Bowie's
+          Verbasizer, which he made with Brian Eno and Ty Roberts. Parts of
+          speech are tagged with
+          <a href="https://github.com/spencermountain/compromise" rel="noopener noreferrer">compromise</a>.
+          This project is not affiliated with
+          <a href="https://verbasizer.com" rel="noopener noreferrer">verbasizer.com</a>,
+          another web version of Bowie's idea.
         </p>
       </section>
     </main>

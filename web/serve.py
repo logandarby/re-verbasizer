@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static server for The Verbasizer with a Gutenberg range-fetch proxy."""
+"""Static server for The Re-verbasizer with a Gutenberg range-fetch proxy."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from html.parser import HTMLParser
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -42,13 +43,16 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/wikipedia"):
             self.handle_wikipedia()
             return
+        if self.path.startswith("/api/wikisource"):
+            self.handle_wikisource()
+            return
         if self.path.startswith("/api/gutenberg/"):
             self.handle_gutenberg()
             return
         super().do_GET()
 
     def send_health(self) -> None:
-        body = json.dumps({"ok": True, "proxy": "gutenberg,wikipedia"}).encode("utf-8")
+        body = json.dumps({"ok": True, "proxy": "gutenberg,wikipedia,wikisource"}).encode("utf-8")
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -70,6 +74,38 @@ class Handler(SimpleHTTPRequestHandler):
 
         try:
             extract = fetch_wikipedia_extract(title)
+        except ValueError as exc:
+            self.send_error(HTTPStatus.NOT_FOUND, str(exc))
+            return
+        except urllib.error.HTTPError as exc:
+            self.send_error(exc.code, exc.reason)
+            return
+        except urllib.error.URLError as exc:
+            self.send_error(HTTPStatus.BAD_GATEWAY, str(exc.reason))
+            return
+
+        body = json.dumps({"title": title, "extract": extract}).encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def handle_wikisource(self) -> None:
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path != "/api/wikisource":
+            self.send_error(HTTPStatus.BAD_REQUEST, "Expected /api/wikisource?title=...")
+            return
+
+        params = urllib.parse.parse_qs(parsed.query)
+        title = (params.get("title") or [""])[0].strip()
+        if not title:
+            self.send_error(HTTPStatus.BAD_REQUEST, "title is required")
+            return
+
+        try:
+            extract = fetch_wikisource_extract(title)
         except ValueError as exc:
             self.send_error(HTTPStatus.NOT_FOUND, str(exc))
             return
@@ -127,7 +163,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def log_message(self, format: str, *args) -> None:
         request_line = str(args[0])
-        if request_line.startswith("GET /api/gutenberg/") or request_line.startswith("GET /api/wikipedia"):
+        if request_line.startswith("GET /api/gutenberg/") or request_line.startswith(
+            "GET /api/wikipedia"
+        ) or request_line.startswith("GET /api/wikisource"):
             sys.stderr.write("%s - %s\n" % (self.address_string(), format % args))
             return
         super().log_message(format, *args)
@@ -148,7 +186,7 @@ def fetch_wikipedia_extract(title: str) -> str:
     url = f"https://en.wikipedia.org/w/api.php?{query}"
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "Verbasizer/1.0 (local cut-up tool; educational use)"},
+        headers={"User-Agent": "Re-verbasizer/1.0 (local cut-up tool; educational use)"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         payload = json.load(response)
@@ -160,6 +198,119 @@ def fetch_wikipedia_extract(title: str) -> str:
     extract = page.get("extract", "").strip()
     if not extract:
         raise ValueError(f"Wikipedia returned no text for: {title}")
+    return extract
+
+
+WIKISOURCE_DROP_TAGS = {"style", "script", "noscript", "figure", "audio", "video"}
+WIKISOURCE_DROP_CLASSES = (
+    "ws-noexport",
+    "similar",
+    "licensetpl",
+    "mw-editsection",
+    "mw-empty-elt",
+    "ws-pagenum",
+    "wst-pagenum",
+    "pagenum",
+    "thumb",
+    "sister-projects",
+    "mediacontainer",
+)
+WIKISOURCE_PREFER_CLASSES = ("prp-pages-output", "poem", "wst-poem")
+
+
+class WikisourceHTMLToText(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.chunks: list[str] = []
+        self.prefer: dict[str, list[str]] = {name: [] for name in WIKISOURCE_PREFER_CLASSES}
+        self.skip_depth = 0
+        self.prefer_depth = 0
+        self.prefer_name: str | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        classes = {part.lower() for part in _class_names(attrs)}
+        dropping = tag in WIKISOURCE_DROP_TAGS or bool(classes & set(WIKISOURCE_DROP_CLASSES))
+        if self.skip_depth or dropping:
+            self.skip_depth += 1
+            return
+
+        if self.prefer_depth:
+            self.prefer_depth += 1
+        else:
+            for name in WIKISOURCE_PREFER_CLASSES:
+                if name in classes:
+                    self.prefer_depth = 1
+                    self.prefer_name = name
+                    break
+
+        if tag in {"br", "p", "div", "li", "tr", "h1", "h2", "h3", "h4", "dd"}:
+            self._emit(" ")
+
+    def handle_endtag(self, tag: str) -> None:
+        if self.skip_depth:
+            self.skip_depth -= 1
+            return
+        if self.prefer_depth:
+            self.prefer_depth -= 1
+            if self.prefer_depth == 0:
+                self.prefer_name = None
+
+    def handle_data(self, data: str) -> None:
+        if self.skip_depth:
+            return
+        self._emit(data)
+
+    def _emit(self, data: str) -> None:
+        if self.prefer_name:
+            self.prefer[self.prefer_name].append(data)
+            return
+        self.chunks.append(data)
+
+    def text(self) -> str:
+        preferred = [
+            normalize_prose("".join(parts))
+            for parts in self.prefer.values()
+            if len(WORD_PATTERN.findall("".join(parts))) >= 20
+        ]
+        if preferred:
+            return max(preferred, key=len)
+        return normalize_prose("".join(self.chunks))
+
+
+def _class_names(attrs: list[tuple[str, str | None]]) -> list[str]:
+    raw = next((value for name, value in attrs if name == "class" and value), "")
+    return raw.split()
+
+
+def fetch_wikisource_extract(title: str) -> str:
+    query = urllib.parse.urlencode(
+        {
+            "action": "parse",
+            "page": title,
+            "prop": "text",
+            "redirects": "1",
+            "disabletoc": "1",
+            "format": "json",
+        }
+    )
+    url = f"https://en.wikisource.org/w/api.php?{query}"
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Re-verbasizer/1.0 (local cut-up tool; educational use)"},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        payload = json.load(response)
+
+    if payload.get("error"):
+        info = payload["error"].get("info") or title
+        raise ValueError(f"Wikisource page not found: {info}")
+
+    html = payload.get("parse", {}).get("text", {}).get("*", "")
+    converter = WikisourceHTMLToText()
+    converter.feed(html)
+    extract = converter.text()
+    if len(WORD_PATTERN.findall(extract)) < 15:
+        raise ValueError(f"Wikisource returned no text for: {title}")
     return extract
 
 
@@ -364,6 +515,7 @@ def main() -> None:
     print(f"Serving {WEB_DIR} at http://127.0.0.1:{port}/")
     print("Gutenberg excerpts: GET /api/gutenberg/{id}?parts=reference,scramble")
     print("Wikipedia excerpts: GET /api/wikipedia?title={page}")
+    print("Wikisource excerpts: GET /api/wikisource?title={page}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

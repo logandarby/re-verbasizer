@@ -74,7 +74,7 @@ async function fetchGutenbergExcerpts(work, parts) {
 }
 
 async function fetchWikisourceExcerpts(work, parts) {
-  const plainText = await fetchMediaWikiWikitext(WIKISOURCE_API, work.page, "Wikisource");
+  const plainText = await fetchWikisourcePlainText(work.page);
   return buildMediaWikiExcerpts(plainText, parts, work);
 }
 
@@ -99,29 +99,61 @@ function buildMediaWikiExcerpts(plainText, parts, work) {
   };
 }
 
-async function fetchMediaWikiWikitext(apiBase, pageTitle, label) {
-  const url = new URL(apiBase);
-  url.searchParams.set("action", "query");
-  url.searchParams.set("prop", "revisions");
-  url.searchParams.set("rvprop", "content");
-  url.searchParams.set("rvslots", "main");
-  url.searchParams.set("titles", pageTitle);
+async function fetchWikisourcePlainText(pageTitle) {
+  const proxyText = await fetchWikisourceViaProxy(pageTitle);
+  if (proxyText !== null) {
+    return proxyText;
+  }
+  return fetchWikisourceDirect(pageTitle);
+}
+
+async function fetchWikisourceViaProxy(pageTitle) {
+  try {
+    const response = await fetch(
+      `/api/wikisource?title=${encodeURIComponent(pageTitle)}`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) {
+      return null;
+    }
+    const payload = await response.json();
+    if (typeof payload.extract !== "string" || !payload.extract.trim()) {
+      return null;
+    }
+    return normalizeProse(payload.extract);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchWikisourceDirect(pageTitle) {
+  const url = new URL(WIKISOURCE_API);
+  url.searchParams.set("action", "parse");
+  url.searchParams.set("page", pageTitle);
+  url.searchParams.set("prop", "text");
+  url.searchParams.set("redirects", "1");
+  url.searchParams.set("disabletoc", "1");
   url.searchParams.set("format", "json");
   url.searchParams.set("origin", "*");
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`${label} request failed.`);
+    throw new Error("Wikisource request failed.");
   }
 
   const payload = await response.json();
-  const page = Object.values(payload.query?.pages || {})[0];
-  if (!page || page.missing !== undefined) {
-    throw new Error(`${label} page not found: ${pageTitle}`);
+  if (payload.error) {
+    throw new Error(
+      payload.error.info || `Wikisource page not found: ${pageTitle}`,
+    );
   }
 
-  const wikitext = page.revisions?.[0]?.slots?.main?.["*"] || "";
-  return wikitextToPlainText(wikitext);
+  const html = payload.parse?.text?.["*"] || "";
+  const plainText = htmlToPlainText(html);
+  if (!plainText.trim()) {
+    throw new Error(`Wikisource returned no text for: ${pageTitle}`);
+  }
+  return plainText;
 }
 
 async function fetchWikipediaPlainText(pageTitle) {
@@ -194,16 +226,40 @@ function normalizeProse(text) {
     .trim();
 }
 
-function wikitextToPlainText(source) {
-  let text = source;
-  text = text.replace(/\[\[Category:[^\]]+\]\]/gi, "");
-  text = text.replace(/\[\[File:[^\]]+\]\]/gi, "");
-  text = text.replace(/\{\{[^}]+\}\}/g, "");
-  text = text.replace(/<[^>]+>/g, "");
-  text = text.replace(/\[\[(?:[^|\]]+\|)?([^\]]+)\]\]/g, "$1");
-  text = text.replace(/'{2,}/g, "");
-  text = text.replace(/^[=]+([^=]+)[=]+$/gm, "$1");
-  return normalizeProse(text);
+const WIKISOURCE_DROP_SELECTOR = [
+  "style",
+  "script",
+  "noscript",
+  "figure",
+  "audio",
+  "video",
+  ".ws-noexport",
+  ".similar",
+  ".licensetpl",
+  ".mw-editsection",
+  ".mw-empty-elt",
+  ".ws-pagenum",
+  ".wst-pagenum",
+  ".pagenum",
+  ".thumb",
+  ".sister-projects",
+  ".mediaContainer",
+].join(", ");
+
+function htmlToPlainText(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll(WIKISOURCE_DROP_SELECTOR).forEach((node) => node.remove());
+
+  const preferred = [...doc.querySelectorAll(".prp-pages-output, .poem, .wst-poem")]
+    .map((node) => normalizeProse(node.textContent || ""))
+    .filter((text) => wordCount(text) >= 20)
+    .sort((a, b) => b.length - a.length)[0];
+
+  const text = preferred || normalizeProse(doc.body.textContent || "");
+  if (wordCount(text) < 15) {
+    throw new Error("Wikisource page had no usable text.");
+  }
+  return text;
 }
 
 function looksLikeSentenceStart(text) {

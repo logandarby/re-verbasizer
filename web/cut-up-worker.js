@@ -1,776 +1,734 @@
-const POS = [
-  "noun",
-  "verb",
-  "adjective",
-  "adverb",
-  "preposition",
-  "interjection",
-  "pronoun",
-  "conjunction",
-  "prefix",
-  "article",
-];
+if (typeof importScripts === "function") {
+  importScripts("vendor/compromise.js");
+} else if (typeof require === "function" && typeof globalThis.nlp !== "function") {
+  globalThis.nlp = require("./vendor/compromise.js");
+}
 
-const POS_INDEX = Object.fromEntries(POS.map((name, index) => [name, index]));
-const CONTENT_MASK =
-  (1 << POS_INDEX.noun) |
-  (1 << POS_INDEX.verb) |
-  (1 << POS_INDEX.adjective) |
-  (1 << POS_INDEX.adverb);
-const NOUN_ADJ_MASK = (1 << POS_INDEX.noun) | (1 << POS_INDEX.adjective);
+// Compromise tags a handful of function words as content words ("beneath" and
+// "over" as Adjective, "my" as Noun). Patching its lexicon fixes them for every
+// downstream step - slots, agreement, and the match-based scoring - instead of
+// filtering them out again in each place.
+nlp.plugin({
+  tags: {
+    ObjectPronoun: { isA: "Pronoun" },
+    PossessivePronoun: { isA: "Pronoun" },
+    Quantifier: { isA: "Determiner" },
+  },
+  words: {
+    above: "Preposition", below: "Preposition", under: "Preposition",
+    over: "Preposition", against: "Preposition", behind: "Preposition",
+    beyond: "Preposition", beside: "Preposition", besides: "Preposition",
+    beneath: "Preposition", underneath: "Preposition", inside: "Preposition",
+    outside: "Preposition", atop: "Preposition", amid: "Preposition",
+    amongst: "Preposition", unlike: "Preposition", despite: "Preposition",
 
-const WORD_PATTERN = /[\p{L}\p{M}]+(?:['\u2019\-][\p{L}\p{M}]+)*/gu;
-const TOKEN_PATTERN =
-  /[\p{L}\p{M}]+(?:['\u2019\-][\p{L}\p{M}]+)*|[^\p{L}\p{M}]+/gu;
+    all: "Quantifier", no: "Quantifier", more: "Quantifier", less: "Quantifier",
+    most: "Quantifier", many: "Quantifier", much: "Quantifier", few: "Quantifier",
+    several: "Quantifier", such: "Quantifier",
 
-const FUNCTION_WORD_INDEX = new Map([
-  ...["a", "an", "the"].map((word) => [word, "article"]),
-  ...[
-    "i",
-    "me",
-    "my",
-    "mine",
-    "myself",
-    "you",
-    "your",
-    "yours",
-    "yourself",
-    "he",
-    "him",
-    "his",
-    "himself",
-    "she",
-    "her",
-    "hers",
-    "herself",
-    "it",
-    "its",
-    "itself",
-    "we",
-    "us",
-    "our",
-    "ours",
-    "ourselves",
-    "they",
-    "them",
-    "their",
-    "theirs",
-    "themselves",
-    "who",
-    "whom",
-    "whose",
-    "which",
-    "that",
-    "this",
-    "these",
-    "those",
-  ].map((word) => [word, "pronoun"]),
-  ...[
-    "about",
-    "above",
-    "across",
-    "after",
-    "against",
-    "along",
-    "among",
-    "around",
-    "at",
-    "before",
-    "behind",
-    "below",
-    "beneath",
-    "beside",
-    "between",
-    "beyond",
-    "by",
-    "despite",
-    "down",
-    "during",
-    "except",
-    "for",
-    "from",
-    "in",
-    "inside",
-    "into",
-    "near",
-    "of",
-    "off",
-    "on",
-    "onto",
-    "out",
-    "outside",
-    "over",
-    "past",
-    "through",
-    "to",
-    "toward",
-    "under",
-    "until",
-    "up",
-    "upon",
-    "with",
-    "within",
-    "without",
-  ].map((word) => [word, "preposition"]),
-  ...[
-    "and",
-    "but",
-    "or",
-    "nor",
-    "for",
-    "yet",
-    "so",
-    "although",
-    "because",
-    "if",
-    "since",
-    "unless",
-    "until",
-    "when",
-    "where",
-    "while",
-  ].map((word) => [word, "conjunction"]),
-  ...["ah", "alas", "hey", "oh", "ouch", "wow"].map((word) => [
-    word,
-    "interjection",
-  ]),
-  ...[
-    "all",
-    "another",
-    "any",
-    "both",
-    "each",
-    "either",
-    "every",
-    "few",
-    "many",
-    "more",
-    "most",
-    "much",
-    "neither",
-    "no",
-    "other",
-    "several",
-    "some",
-    "such",
-  ].map((word) => [word, "determiner"]),
-]);
+    me: "ObjectPronoun", him: "ObjectPronoun", them: "ObjectPronoun",
+    us: "ObjectPronoun",
 
-const NEXT_PREFERRED = {
-  start: ["pronoun", "article", "noun", "adjective", "adverb", "interjection"],
-  article: ["adjective", "noun", "adverb"],
-  pronoun: ["verb", "noun", "adjective", "adverb"],
-  adjective: ["noun", "adjective"],
-  noun: ["noun", "verb", "preposition", "conjunction", "adverb"],
-  verb: ["adverb", "article", "noun", "adjective", "preposition", "pronoun"],
-  adverb: ["verb", "adjective", "adverb", "preposition"],
-  preposition: ["article", "pronoun", "adjective", "noun"],
-  conjunction: ["pronoun", "article", "verb", "noun", "adjective", "adverb"],
-  interjection: ["pronoun", "article", "noun"],
-};
+    my: "PossessivePronoun", your: "PossessivePronoun", his: "PossessivePronoun",
+    her: "PossessivePronoun", its: "PossessivePronoun", our: "PossessivePronoun",
+    their: "PossessivePronoun", mine: "PossessivePronoun", yours: "PossessivePronoun",
+    hers: "PossessivePronoun", ours: "PossessivePronoun", theirs: "PossessivePronoun",
 
-const POSSESSIVE_PREFERRED = ["noun", "adjective", "pronoun", "adverb"];
-const AUXILIARY_PREFERRED = ["adjective", "adverb", "verb", "noun"];
+    be: "Copula", been: "Copula", being: "Copula",
+    have: "Auxiliary", has: "Auxiliary", had: "Auxiliary", having: "Auxiliary",
+    do: "Auxiliary", does: "Auxiliary", did: "Auxiliary", doing: "Auxiliary",
+    done: "Auxiliary",
 
-const POSSESSIVE_PRONOUNS = new Set([
-  "my",
-  "your",
-  "yours",
-  "his",
-  "her",
-  "hers",
-  "its",
-  "our",
-  "ours",
-  "their",
-  "theirs",
-]);
+    here: "There", there: "There", so: "Conjunction",
+  },
+});
 
-const AUXILIARY_VERBS = new Set([
-  "am",
-  "is",
-  "are",
-  "was",
-  "were",
-  "be",
-  "been",
-  "being",
-  "have",
-  "has",
-  "had",
-  "do",
-  "does",
-  "did",
-  "will",
-  "would",
-  "shall",
-  "should",
-  "may",
-  "might",
-  "must",
-  "can",
-  "could",
-]);
-
-const CATEGORY_OVERRIDES = new Map([
-  ["family", 1 << POS_INDEX.noun],
-  ["people", 1 << POS_INDEX.noun],
-  ["police", 1 << POS_INDEX.noun],
-  ["data", 1 << POS_INDEX.noun],
-  ["news", 1 << POS_INDEX.noun],
-  ["works", 1 << POS_INDEX.noun],
-  ["means", 1 << POS_INDEX.noun],
-  ["series", 1 << POS_INDEX.noun],
-  ["species", 1 << POS_INDEX.noun],
-  ["clothes", 1 << POS_INDEX.noun],
-  ["thanks", 1 << POS_INDEX.noun],
-  ["goods", 1 << POS_INDEX.noun],
-  ["walk", 1 << POS_INDEX.verb],
-  ["open", 1 << POS_INDEX.verb],
-  ["find", 1 << POS_INDEX.verb],
-  ["finds", 1 << POS_INDEX.verb],
-  ["found", 1 << POS_INDEX.verb],
-  ["light", 1 << POS_INDEX.noun],
-  ["turn", 1 << POS_INDEX.noun],
-  ["empty", 1 << POS_INDEX.adjective],
-  ["narrow", 1 << POS_INDEX.adjective],
-  ["silent", 1 << POS_INDEX.adjective],
-  ["tired", 1 << POS_INDEX.adjective],
-  ["distant", 1 << POS_INDEX.adjective],
-  ["old", 1 << POS_INDEX.adjective],
-  ["blue", 1 << POS_INDEX.adjective],
-  ["moves", 1 << POS_INDEX.verb],
-  ["finds", 1 << POS_INDEX.verb],
-  ["hums", 1 << POS_INDEX.verb],
-  ["washes", 1 << POS_INDEX.verb],
-]);
-
-const COMMON_VERBS = new Set([
-  "be", "have", "do", "say", "go", "get", "make", "know", "think", "take",
-  "see", "come", "want", "look", "use", "find", "give", "tell", "work", "call",
-  "try", "ask", "need", "feel", "become", "leave", "put", "mean", "keep",
-  "let", "begin", "seem", "help", "talk", "turn", "start", "show", "hear",
-  "play", "run", "move", "live", "believe", "hold", "bring", "happen", "write",
-  "sit", "stand", "lose", "pay", "meet", "include", "continue", "set", "learn",
-  "change", "lead", "understand", "watch", "follow", "stop", "create", "speak",
-  "read", "allow", "add", "spend", "grow", "open", "walk", "win", "offer",
-  "remember", "love", "consider", "appear", "buy", "wait", "serve", "die",
-  "send", "expect", "build", "stay", "fall", "cut", "reach", "kill", "remain",
-  "carry", "hum", "wash", "sleep", "wake",
-]);
-
-const SLOT_MASK = Object.fromEntries(
-  POS.map((name) => [name, 1 << POS_INDEX[name]]),
-);
-
-const SLOT_FALLBACK = {
-  noun: ["noun"],
-  adjective: ["adjective"],
+const DRAFTS = 8;
+const OPEN_SLOTS = new Set(["noun", "verb", "adjective", "adverb", "proper"]);
+const SLOT_FALLBACKS = {
   verb: ["verb"],
+  noun: ["noun", "proper"],
+  proper: ["proper", "noun"],
+  adjective: ["adjective"],
   adverb: ["adverb"],
 };
+const BE_FORMS = /^(?:am|is|are|was|were|be|been|being)$/i;
+const HAVE_FORMS = /^(?:have|has|had|having)$/i;
+const DO_FORMS = /^(?:do|does|did|doing)$/i;
+const BE_TABLE = {
+  present: { I: "am", singular: "is", plural: "are" },
+  past: { I: "was", singular: "was", plural: "were" },
+};
+const PLURAL_PRONOUNS = new Set(["we", "they", "you", "these", "those"]);
+const isolatedCache = new Map();
+const verbLemmaCache = new Map();
+const conjugateCache = new Map();
+const nounLemmaCache = new Map();
+const inflectNounCache = new Map();
+const inflectAdjectiveCache = new Map();
+let analyzeCache = { scramble: "", reference: "", preserveLines: false, tokens: null, buckets: null };
 
-const KEEP_FUNCTION_KINDS = new Set(["article", "determiner"]);
-const VOWEL_SOUND = /^(?:[aeiou]|honest|hour|heir|honor)/;
-
-let dictionary = null;
-const wordInfoCache = new Map();
-
-function normalizeWord(word) {
-  return word.toLowerCase().replaceAll("\u2019", "'");
-}
-
-function maskToCategories(mask) {
-  const categories = [];
-  for (let index = 0; index < POS.length; index += 1) {
-    if (mask & (1 << index)) {
-      categories.push(POS[index]);
-    }
+function normalizeInput(text, preserveLines) {
+  let cleaned = text.replace(/\r\n?/g, "\n");
+  if (preserveLines) {
+    return cleaned.replace(/[^\S\n]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   }
-  return categories;
-}
-
-function getWordInfo(word) {
-  const normalized = normalizeWord(word);
-  const cached = wordInfoCache.get(normalized);
-  if (cached) {
-    return cached;
-  }
-
-  let mask;
-  const functionKind = FUNCTION_WORD_INDEX.get(normalized) || null;
-  if (functionKind) {
-    const slot = functionKind === "determiner" ? "adjective" : functionKind;
-    mask = 1 << POS_INDEX[slot];
-  } else {
-    const override = CATEGORY_OVERRIDES.get(normalized);
-    if (override !== undefined) {
-      mask = override;
-    } else {
-      const known = dictionary.get(normalized);
-      if (known !== undefined) {
-        mask = narrowNoisyMask(normalized, known);
-      } else {
-        mask = guessUnknownMask(normalized);
-      }
-    }
-  }
-
-  const info = {
-    normalized,
-    mask,
-    categories: maskToCategories(mask),
-    functionWord: functionKind !== null,
-    functionKind,
-  };
-  wordInfoCache.set(normalized, info);
-  return info;
-}
-
-function guessUnknownMask(normalized) {
-  if (normalized.endsWith("ly")) return 1 << POS_INDEX.adverb;
-  if (/(ing|ed|en|ize|ise|ify)$/.test(normalized)) return 1 << POS_INDEX.verb;
-  if (/(ous|ful|less|able|ible|ive|al|ic|ish|ary)$/.test(normalized)) {
-    return 1 << POS_INDEX.adjective;
-  }
-
-  if (normalized.length > 3 && normalized.endsWith("s") && !normalized.endsWith("ss")) {
-    const stem = normalized.endsWith("es")
-      ? normalized.slice(0, -2)
-      : normalized.slice(0, -1);
-    if (COMMON_VERBS.has(stem) || CATEGORY_OVERRIDES.get(stem) === SLOT_MASK.verb) {
-      return 1 << POS_INDEX.verb;
-    }
-  }
-
-  return 1 << POS_INDEX.noun;
-}
-
-function narrowNoisyMask(normalized, mask) {
-  const noun = mask & SLOT_MASK.noun;
-  const verb = mask & SLOT_MASK.verb;
-  const adjective = mask & SLOT_MASK.adjective;
-  const contentCount = Number(Boolean(noun)) + Number(Boolean(verb)) + Number(Boolean(adjective));
-
-  if (/(ing|ed|en|ize|ise|ify)$/.test(normalized) && verb) {
-    return SLOT_MASK.verb;
-  }
-  if (/(ous|ful|less|able|ible|ive|al|ic|ish|ary)$/.test(normalized) && adjective) {
-    return SLOT_MASK.adjective;
-  }
-  if (contentCount >= 3) {
-    if (COMMON_VERBS.has(normalized)) return SLOT_MASK.verb;
-    return noun || SLOT_MASK.noun;
-  }
-  if (noun && adjective && !verb) {
-    return SLOT_MASK.adjective;
-  }
-  if (noun && verb && !adjective && !COMMON_VERBS.has(normalized)) {
-    return SLOT_MASK.noun;
-  }
-  return mask;
-}
-
-function looksLikeVerb(item) {
-  if (!(item.mask & SLOT_MASK.verb)) return false;
-  if (COMMON_VERBS.has(item.normalized)) return true;
-  if (/(ing|ed|en|ize|ise|ify)$/.test(item.normalized)) return true;
-  if (!(item.mask & (SLOT_MASK.noun | SLOT_MASK.adjective))) return true;
-  return false;
-}
-
-function isProperNoun(word, info) {
-  if (info.functionWord) {
-    return false;
-  }
-  const first = word.charAt(0);
-  return first === first.toUpperCase() && first !== first.toLowerCase();
-}
-
-function slotPreferences(previousSlot, sentenceStart, previousWord) {
-  if (sentenceStart) {
-    return NEXT_PREFERRED.start;
-  }
-  const previous = normalizeWord(previousWord);
-  if (POSSESSIVE_PRONOUNS.has(previous)) {
-    return POSSESSIVE_PREFERRED;
-  }
-  if (AUXILIARY_VERBS.has(previous)) {
-    return AUXILIARY_PREFERRED;
-  }
-  return NEXT_PREFERRED[previousSlot] || NEXT_PREFERRED.start;
-}
-
-function chooseSlot(info, previousSlot, sentenceStart, previousWord) {
-  if (info.functionKind) {
-    return info.functionKind === "determiner" ? "adjective" : info.functionKind;
-  }
-
-  const preferences = slotPreferences(
-    previousSlot,
-    sentenceStart,
-    previousWord,
-  );
-  for (let index = 0; index < preferences.length; index += 1) {
-    const preferred = preferences[index];
-    if (info.mask & SLOT_MASK[preferred]) {
-      return preferred;
-    }
-  }
-
-  for (let index = 0; index < POS.length; index += 1) {
-    const bit = 1 << index;
-    if (info.mask & bit && CONTENT_MASK & bit) {
-      return POS[index];
-    }
-  }
-
-  for (let index = 0; index < POS.length; index += 1) {
-    if (info.mask & (1 << index)) {
-      return POS[index];
-    }
-  }
-
-  return "noun";
-}
-
-function normalizeInput(text) {
-  return text
-    .replace(/\r\n?/g, "\n")
+  return cleaned
     .replace(/[^\S\n]+/g, " ")
     .replace(/\n+/g, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
 
-function polishOutput(text) {
-  return text
-    .replace(/\s+([,.;:!?])/g, "$1")
-    .replace(/([,.;:!?])([^\s"'”’)\]])/g, "$1 $2")
-    .replace(/\(\s+/g, "(")
-    .replace(/\s+\)/g, ")")
-    .replace(/"\s+/g, '"')
-    .replace(/\s+"/g, '"')
-    .replace(/\s{2,}/g, " ")
-    .trim();
+function hasTag(tags, name) {
+  return tags.has(name);
 }
 
-function isWord(token) {
-  WORD_PATTERN.lastIndex = 0;
-  return WORD_PATTERN.test(token);
+function slotFromTags(tags) {
+  if (hasTag(tags, "Value") || hasTag(tags, "NumericValue") || hasTag(tags, "Year")) {
+    return "value";
+  }
+  if (hasTag(tags, "Reflexive")) return "reflexive";
+  if (hasTag(tags, "PossessivePronoun")) return "possessive";
+  if (hasTag(tags, "Possessive") && hasTag(tags, "Pronoun")) return "possessive";
+  if (hasTag(tags, "Pronoun")) return "pronoun";
+  if (hasTag(tags, "Determiner")) return "determiner";
+  if (hasTag(tags, "QuestionWord")) return "question";
+  if (hasTag(tags, "There")) return "there";
+  if (hasTag(tags, "Conjunction") || hasTag(tags, "Condition")) return "conjunction";
+  if (hasTag(tags, "Preposition")) return "preposition";
+  if (hasTag(tags, "Negative")) return "negative";
+  if (hasTag(tags, "Modal")) return "modal";
+  if (hasTag(tags, "Auxiliary")) return "auxiliary";
+  if (hasTag(tags, "Copula")) return "copula";
+  if (hasTag(tags, "Particle")) return "particle";
+  if (hasTag(tags, "Adverb")) return "adverb";
+  if (hasTag(tags, "Adjective")) return "adjective";
+  if (hasTag(tags, "Verb") || hasTag(tags, "Gerund")) return "verb";
+  if (hasTag(tags, "ProperNoun") || hasTag(tags, "Person")) return "proper";
+  return "noun";
 }
 
-function tokenize(text) {
-  return text.match(TOKEN_PATTERN) || [];
+function verbFormFromTags(tags) {
+  if (hasTag(tags, "Gerund")) return "gerund";
+  if (hasTag(tags, "Participle")) return "participle";
+  if (hasTag(tags, "PastTense")) return "past";
+  if (hasTag(tags, "FutureTense")) return "future";
+  return "present";
 }
 
-function analyzeReference(text) {
-  const tokens = tokenize(text);
-  const analyzed = new Array(tokens.length);
-  let previousSlot = "start";
-  let previousWord = "";
-  let sentenceStart = true;
+function isOpenSlot(slot) {
+  return OPEN_SLOTS.has(slot);
+}
 
+function analyze(text) {
+  const tokens = [];
+
+  for (const sentence of nlp(text).document) {
+    for (const term of sentence) {
+      if (term.pre) tokens.push({ type: "separator", value: term.pre });
+      const slot = slotFromTags(term.tags);
+      tokens.push({
+        type: "word",
+        value: term.text,
+        normal: term.normal,
+        slot,
+        closed: !isOpenSlot(slot),
+        plural: term.tags.has("Plural"),
+        possessive: term.tags.has("Possessive") && !term.tags.has("Pronoun"),
+        comparative: term.tags.has("Comparative"),
+        superlative: term.tags.has("Superlative"),
+        verbForm: verbFormFromTags(term.tags),
+        acronym: term.tags.has("Acronym"),
+        proper: term.tags.has("ProperNoun") || term.tags.has("Person"),
+        abbreviation: term.tags.has("Abbreviation"),
+      });
+      if (term.post) tokens.push({ type: "separator", value: term.post });
+    }
+  }
+
+  retagMislabelledVerbs(tokens);
+  retagAttributiveGerunds(tokens);
+  return tokens;
+}
+
+function retagMislabelledVerbs(tokens) {
   for (let index = 0; index < tokens.length; index += 1) {
-    const value = tokens[index];
-    if (!isWord(value)) {
-      if (/[.!?]/.test(value)) {
-        sentenceStart = true;
-        previousSlot = "start";
-        previousWord = "";
+    const token = tokens[index];
+    if (token.type !== "word" || token.slot !== "noun" || token.closed) continue;
+    const previous = previousWord(tokens, index);
+    if (!previous || (previous.slot !== "noun" && previous.slot !== "pronoun" && previous.slot !== "proper")) {
+      continue;
+    }
+    const isolated = isolatedTerm(token.normal);
+    if (!isolated?.tags.has("Verb") || isolated.tags.has("Noun")) continue;
+    token.slot = "verb";
+    token.verbForm = verbFormFromTags(isolated.tags);
+  }
+}
+
+function retagAttributiveGerunds(tokens) {
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word" || token.closed) continue;
+    const previous = previousWord(tokens, index);
+    const next = nextWord(tokens, index);
+    if (!previous || (previous.slot !== "determiner" && previous.slot !== "adjective")) continue;
+    if (!next || (next.slot !== "noun" && next.slot !== "proper" && next.slot !== "adjective")) continue;
+    const isolated = isolatedTerm(token.normal);
+    if (token.verbForm !== "gerund" && !isolated?.tags.has("Gerund")) continue;
+    token.slot = "adjective";
+  }
+}
+
+// Compromise only conjugates words it already reads as verbs. Asking it to
+// conjugate an inflected surface form invents junk ("developed" -> "developeds",
+// "left" -> "lefting"), so resolve a real infinitive first: read the word in a
+// frame where a verb belongs, then confirm that infinitive is a verb on its own.
+function isolatedTerm(word) {
+  const key = word.toLowerCase();
+  if (isolatedCache.has(key)) return isolatedCache.get(key);
+  const term = nlp(key).document[0]?.[0] || null;
+  isolatedCache.set(key, term);
+  return term;
+}
+
+function verbLemma(word) {
+  const key = word.toLowerCase();
+  if (verbLemmaCache.has(key)) return verbLemmaCache.get(key);
+
+  let lemma = null;
+  const framed = nlp(`they ${key} it`);
+  if (framed.document[0]?.[1]?.tags.has("Verb")) {
+    framed.verbs().toInfinitive();
+    const candidate = framed.document[0]?.[1]?.normal || "";
+    if (candidate && isolatedTerm(candidate)?.tags.has("Verb")) {
+      lemma = candidate;
+    }
+  }
+
+  verbLemmaCache.set(key, lemma);
+  return lemma;
+}
+
+function conjugateVerb(lemma) {
+  if (!lemma) return null;
+  const key = lemma.toLowerCase();
+  if (conjugateCache.has(key)) return conjugateCache.get(key);
+
+  const forms = nlp(key).verbs().conjugate()[0] || null;
+  conjugateCache.set(key, forms);
+  return forms;
+}
+
+function nounLemma(word) {
+  const key = word.toLowerCase();
+  if (nounLemmaCache.has(key)) return nounLemmaCache.get(key);
+  const doc = nlp(key);
+  if (!doc.nouns().found) doc.tag("Noun");
+  doc.nouns().toSingular();
+  const lemma = (doc.text().trim() || key).replace(/['’]s$/i, "");
+  nounLemmaCache.set(key, lemma);
+  return lemma;
+}
+
+// Source excerpts carry fragments from citations and abbreviations ("sq",
+// "lgm"). Shape plus compromise's own #Abbreviation tag keeps them out.
+function isPoolWorthy(token) {
+  const normal = token.normal || "";
+  if (token.abbreviation) return false;
+  if (/\d/.test(normal)) return false;
+  if (normal.length < 3) return false;
+  if (!/[aeiouy]/.test(normal)) return false;
+  return true;
+}
+
+function buildPool(text) {
+  const buckets = {};
+
+  for (const token of analyze(text)) {
+    if (token.type !== "word" || token.closed) continue;
+    if (!isPoolWorthy(token)) continue;
+
+    let slot = token.slot;
+    let lemma = null;
+
+    if (slot === "verb") {
+      lemma = verbLemma(token.normal);
+      if (!lemma) {
+        // Tagged as a verb by position only ("proposals"); it is really a noun.
+        slot = "noun";
       }
-      analyzed[index] = { type: "separator", value };
-      continue;
+    }
+    if (slot !== "verb") {
+      lemma = slot === "noun" || slot === "proper" ? nounLemma(token.value) : token.normal;
     }
 
-    const info = getWordInfo(value);
-    const slot = chooseSlot(info, previousSlot, sentenceStart, previousWord);
-    const properNoun = !sentenceStart && isProperNoun(value, info);
-
-    previousSlot = slot;
-    previousWord = value;
-    sentenceStart = false;
-
-    analyzed[index] = {
-      type: "word",
-      value,
-      categories: info.categories,
-      category: slot,
+    (buckets[slot] ||= []).push({
+      value: token.value,
+      normal: token.normal,
+      lemma,
       slot,
-      mask: info.mask,
-      functionWord: info.functionWord,
-      properNoun,
-    };
-  }
-
-  return analyzed;
-}
-
-function buildScramblePool(text) {
-  const words = tokenize(text);
-  const pool = [];
-  for (let index = 0; index < words.length; index += 1) {
-    const value = words[index];
-    if (!isWord(value)) continue;
-    const info = getWordInfo(value);
-    pool.push({
-      id: pool.length,
-      value,
-      normalized: info.normalized,
-      mask: info.mask,
-      categories: info.categories,
-      functionWord: info.functionWord,
-      properNoun: isProperNoun(value, info),
+      plural: token.plural,
+      acronym: token.acronym,
+      proper: token.proper,
     });
-  }
-  return pool;
-}
-
-function buildPoolIndex(pool) {
-  const buckets = {
-    function: [],
-    proper: [],
-    noun: [],
-    verb: [],
-    adjective: [],
-    adverb: [],
-    nounAdj: [],
-  };
-
-  for (let index = 0; index < pool.length; index += 1) {
-    const item = pool[index];
-    if (item.functionWord) {
-      buckets.function.push(index);
-      continue;
-    }
-    if (item.properNoun) {
-      buckets.proper.push(index);
-      continue;
-    }
-
-    const { mask } = item;
-    if (mask & SLOT_MASK.noun) buckets.noun.push(index);
-    if (mask & SLOT_MASK.verb) buckets.verb.push(index);
-    if (mask & SLOT_MASK.adjective) buckets.adjective.push(index);
-    if (mask & SLOT_MASK.adverb) buckets.adverb.push(index);
-    if (mask & NOUN_ADJ_MASK) buckets.nounAdj.push(index);
   }
 
   return buckets;
 }
 
-function pickFromBucket(bucket, pool, state, accept) {
-  const size = bucket.length;
-  if (!size) return null;
-
-  const { used, allowReuse, recent } = state;
-  const attempts = size < 16 ? size : 16;
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const item = pool[bucket[(Math.random() * size) | 0]];
-    if (accept && !accept(item)) continue;
-    if (!allowReuse && used.has(item.id)) continue;
-    if (item.normalized === state.lastWord) continue;
-    if (recent.has(item.normalized)) continue;
-    return item;
-  }
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const item = pool[bucket[(Math.random() * size) | 0]];
-    if (accept && !accept(item)) continue;
-    if (!allowReuse && used.has(item.id)) continue;
-    return item;
-  }
-
-  return null;
+function randomItem(items) {
+  return items[(Math.random() * items.length) | 0];
 }
 
-function matchCase(word, model) {
-  if (model === model.toUpperCase() && model.length > 1) {
-    return word.toUpperCase();
-  }
-  const first = model.charAt(0);
-  if (first === first.toUpperCase() && first !== first.toLowerCase()) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  }
-  return word.toLowerCase();
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-function articleFor(nextWord) {
-  return VOWEL_SOUND.test(normalizeWord(nextWord || "")) ? "an" : "a";
-}
+// The replacement's own identity decides its shape - an acronym stays upper, a
+// proper noun stays capitalised - while position decides sentence-initial caps.
+// Copying the reference token's case instead turned "wall" into "GULF".
+function recase(tokens) {
+  let sentenceStart = true;
 
-function contentBucketNames(slot) {
-  const names = [slot];
-  const fallback = SLOT_FALLBACK[slot];
-  if (fallback) {
-    for (let index = 0; index < fallback.length; index += 1) {
-      const name = fallback[index];
-      if (!names.includes(name)) {
-        names.push(name);
-      }
-    }
-  }
-  return names;
-}
-
-function generate({ scrambleText, referenceText, preserveLines, allowReuse }) {
-  const reference = analyzeReference(normalizeInput(referenceText));
-  const pool = buildScramblePool(normalizeInput(scrambleText));
-  const buckets = buildPoolIndex(pool);
-  const used = new Set();
-  const recent = new Set();
-  const recentQueue = [];
-
-  const state = { used, allowReuse, lastWord: null, recent };
-
-  function remember(word) {
-    const normalized = normalizeWord(word);
-    state.lastWord = normalized;
-    if (recent.has(normalized)) {
-      return;
-    }
-    recent.add(normalized);
-    recentQueue.push(normalized);
-    if (recentQueue.length > 4) {
-      recent.delete(recentQueue.shift());
-    }
-  }
-
-  function pickItem(item, refToken) {
-    if (!allowReuse) {
-      used.add(item.id);
-    }
-    remember(item.value);
-    return matchCase(item.value, refToken.value);
-  }
-
-  function pickFromBuckets(names, refToken) {
-    const accept = refToken.slot === "verb" ? looksLikeVerb : null;
-    for (let index = 0; index < names.length; index += 1) {
-      const item = pickFromBucket(buckets[names[index]], pool, state, accept);
-      if (item) {
-        return pickItem(item, refToken);
-      }
-    }
-    return null;
-  }
-
-  function takeWord(refToken) {
-    if (refToken.functionWord) {
-      if (KEEP_FUNCTION_KINDS.has(getWordInfo(refToken.value).functionKind)) {
-        remember(refToken.value);
-        return refToken.value;
-      }
-      const bucket = buckets.function;
-      const size = bucket.length;
-      if (size) {
-        for (let attempt = 0; attempt < 8; attempt += 1) {
-          const item = pool[bucket[(Math.random() * size) | 0]];
-          if (!(item.mask & refToken.mask)) continue;
-          if (!allowReuse && used.has(item.id)) continue;
-          return pickItem(item, refToken);
-        }
-      }
-      remember(refToken.value);
-      return refToken.value;
-    }
-
-    if (refToken.properNoun) {
-      const item = pickFromBucket(buckets.proper, pool, state, null);
-      if (item) {
-        return pickItem(item, refToken);
-      }
-      remember(refToken.value);
-      return refToken.value;
-    }
-
-    const picked = pickFromBuckets(contentBucketNames(refToken.slot), refToken);
-    if (picked) {
-      return picked;
-    }
-
-    remember(refToken.value);
-    return refToken.value;
-  }
-
-  const outputTokens = new Array(reference.length);
-  const parts = new Array(reference.length);
-
-  for (let index = 0; index < reference.length; index += 1) {
-    const token = reference[index];
+  for (const token of tokens) {
     if (token.type === "separator") {
-      const value = preserveLines
-        ? token.value
-        : token.value.replace(/\s+/g, " ");
-      outputTokens[index] = { type: "separator", value };
-      parts[index] = value;
+      if (/[.!?]/.test(token.value)) sentenceStart = true;
       continue;
     }
 
-    const value = takeWord(token);
-    outputTokens[index] = { type: "word", value, category: token.category };
-    parts[index] = value;
-  }
-
-  for (let index = 0; index < outputTokens.length; index += 1) {
-    const token = outputTokens[index];
-    if (token.type !== "word") continue;
-    const article = normalizeWord(token.value);
-    if (article !== "a" && article !== "an") continue;
-
-    let nextWord = "";
-    for (let look = index + 1; look < outputTokens.length; look += 1) {
-      if (outputTokens[look].type === "word") {
-        nextWord = outputTokens[look].value;
-        break;
-      }
+    if (token.normal === "i" || /^i['’]/.test(token.normal)) {
+      token.value = capitalize(token.normal);
+    } else if (token.acronym) {
+      token.value = token.normal.toUpperCase();
+    } else if (token.proper) {
+      token.value = capitalize(token.normal);
+    } else {
+      token.value = sentenceStart ? capitalize(token.normal) : token.normal;
     }
 
-    const agreed = matchCase(articleFor(nextWord), token.value);
-    token.value = agreed;
-    parts[index] = agreed;
+    sentenceStart = false;
+  }
+
+  return tokens;
+}
+
+function pickFromBucket(bucket, recent, allowReuse, used) {
+  if (!bucket?.length) return null;
+
+  const attempts = Math.min(bucket.length, 16);
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const item = randomItem(bucket);
+    if (!allowReuse && used.has(item)) continue;
+    if (recent.has(item.lemma || item.normal)) continue;
+    return item;
+  }
+
+  const leftover = bucket.filter((item) => allowReuse || !used.has(item));
+  return leftover.length ? randomItem(leftover) : null;
+}
+
+function pickForSlot(slot, buckets, recent, allowReuse, used) {
+  for (const name of SLOT_FALLBACKS[slot] || [slot]) {
+    const item = pickFromBucket(buckets[name], recent, allowReuse, used);
+    if (item) return item;
+  }
+  return null;
+}
+
+function inflectNoun(lemma, plural, possessive) {
+  const key = `${lemma.toLowerCase()}|${plural ? "p" : "s"}|${possessive ? "poss" : ""}`;
+  if (inflectNounCache.has(key)) return inflectNounCache.get(key);
+  const doc = nlp(lemma);
+  if (!doc.nouns().found) doc.tag("Noun");
+  if (plural) doc.nouns().toPlural();
+  else doc.nouns().toSingular();
+  let text = (doc.text().trim() || lemma).replace(/['’]s$/i, "");
+  if (possessive) {
+    text = /s$/i.test(text) ? `${text}'` : `${text}'s`;
+  }
+  inflectNounCache.set(key, text);
+  return text;
+}
+
+function inflectAdjective(word, comparative, superlative) {
+  if (!comparative && !superlative) return word;
+  const key = `${word.toLowerCase()}|${superlative ? "sup" : "comp"}`;
+  if (inflectAdjectiveCache.has(key)) return inflectAdjectiveCache.get(key);
+  const doc = nlp(word);
+  if (!doc.adjectives().found) doc.tag("Adjective");
+  if (superlative) doc.adjectives().toSuperlative();
+  else doc.adjectives().toComparative();
+  const text = doc.text().trim() || word;
+  inflectAdjectiveCache.set(key, text);
+  return text;
+}
+
+function inflectVerb(lemma, form, person) {
+  const forms = conjugateVerb(lemma);
+  if (!forms) return lemma;
+
+  if (form === "gerund") return forms.Gerund || lemma;
+  if (form === "participle") return forms.Participle || forms.PastTense || lemma;
+  if (form === "past") return forms.PastTense || lemma;
+  if (form === "infinitive" || form === "future") return forms.Infinitive || lemma;
+  return person === "singular"
+    ? forms.PresentTense || forms.Infinitive || lemma
+    : forms.Infinitive || lemma;
+}
+
+function previousWord(tokens, index) {
+  for (let look = index - 1; look >= 0; look -= 1) {
+    if (tokens[look].type === "word") return tokens[look];
+  }
+  return null;
+}
+
+function nextWord(tokens, index) {
+  for (let look = index + 1; look < tokens.length; look += 1) {
+    const token = tokens[look];
+    if (token.type === "word") return token;
+    if (/[.!?]/.test(token.value)) return null;
+  }
+  return null;
+}
+
+function nextHeadNoun(tokens, index) {
+  for (let look = index + 1; look < tokens.length; look += 1) {
+    const token = tokens[look];
+    if (token.type !== "word") {
+      if (/[.!?]/.test(token.value)) return null;
+      continue;
+    }
+    if (token.slot === "noun" || token.slot === "proper") return token;
+    if (token.slot === "verb" || token.slot === "copula" || token.slot === "preposition") {
+      return null;
+    }
+  }
+  return null;
+}
+
+// A verb's shape depends on what precedes it: "to spread", "can spread",
+// "is spread", "has spread", "of spreading".
+function contextualVerbForm(tokens, index, fallbackForm) {
+  const previous = previousWord(tokens, index);
+  if (!previous) return fallbackForm;
+  if (previous.normal === "to" || previous.slot === "modal") return "infinitive";
+  if (previous.slot === "copula" && !/^(?:be|being)$/i.test(previous.normal)) {
+    return "participle";
+  }
+  if (previous.slot === "auxiliary") {
+    if (HAVE_FORMS.test(previous.normal)) return "participle";
+    if (DO_FORMS.test(previous.normal)) return "infinitive";
+  }
+  if (previous.slot === "preposition") return "gerund";
+  return fallbackForm;
+}
+
+function sentenceStartIndex(tokens, index) {
+  for (let look = index - 1; look >= 0; look -= 1) {
+    if (tokens[look].type !== "word" && /[.!?]/.test(tokens[look].value)) {
+      return look + 1;
+    }
+  }
+  return 0;
+}
+
+// Read the subject from our own tokens rather than re-parsing the draft as
+// text: compromise reads a sentence-initial "Transports" as a verb, which used
+// to leave the agreement code with no subject at all.
+function subjectToken(tokens, verbIndex) {
+  const start = sentenceStartIndex(tokens, verbIndex);
+  let candidate = null;
+
+  for (let index = start; index < verbIndex; index += 1) {
+    const token = tokens[index];
+    if (token.type !== "word") continue;
+    if (token.slot === "pronoun" || token.slot === "noun" || token.slot === "proper") {
+      return token;
+    }
+    if (token.slot === "preposition" || token.slot === "conjunction") {
+      candidate = null;
+      continue;
+    }
+    if (!candidate && !token.closed) candidate = token;
+  }
+
+  return candidate;
+}
+
+function personOf(token) {
+  if (!token) return "singular";
+  if (token.normal === "i") return "I";
+  if (PLURAL_PRONOUNS.has(token.normal)) return "plural";
+  return token.plural ? "plural" : "singular";
+}
+
+function startsWithVowelSound(normal) {
+  const word = (normal || "").toLowerCase();
+  if (!word) return false;
+  if (/^(?:uni|use|eu|ewe|one|once|u(?:ni|[bcdfgjklmnpqrstvwxyz]))/.test(word)) {
+    return false;
+  }
+  if (/^(?:honest|hour|heir|honor|honour)/.test(word)) return true;
+  if (/^u[aeiou]/.test(word)) return true;
+  return /^[aeiou]/.test(word);
+}
+
+function fillDraft(reference, buckets, allowReuse) {
+  const used = new Set();
+  const recent = new Set();
+  const recentQueue = [];
+  const output = [];
+
+  function remember(key) {
+    if (!key || recent.has(key)) return;
+    recent.add(key);
+    recentQueue.push(key);
+    if (recentQueue.length > 4) recent.delete(recentQueue.shift());
+  }
+
+  for (let index = 0; index < reference.length; index += 1) {
+    const token = reference[index];
+    if (token.type === "separator" || token.closed) {
+      output.push({ ...token });
+      continue;
+    }
+
+    const item = pickForSlot(token.slot, buckets, recent, allowReuse, used);
+    if (!item) {
+      remember(token.normal);
+      output.push({ ...token });
+      continue;
+    }
+
+    if (!allowReuse) used.add(item);
+    remember(item.lemma || item.normal);
+
+    let filled = item.lemma || item.value;
+    if (token.slot === "noun" || (token.slot === "proper" && token.plural)) {
+      filled = inflectNoun(item.lemma || item.value, token.plural, token.possessive);
+    } else if (token.slot === "adjective") {
+      filled = inflectAdjective(item.value, token.comparative, token.superlative);
+    }
+    // Verbs are inflected in repairTokens, once the surrounding tokens exist.
+
+    output.push({
+      ...token,
+      value: filled,
+      normal: filled.toLowerCase(),
+      lemma: item.lemma,
+      acronym: item.acronym,
+      proper: item.proper && token.slot !== "noun",
+    });
+  }
+
+  return output;
+}
+
+function setWord(token, next) {
+  if (!next) return;
+  token.value = next;
+  token.normal = next.toLowerCase();
+}
+
+function repairTokens(tokens) {
+  const repaired = tokens.map((token) => ({ ...token }));
+
+  for (let index = 0; index < repaired.length; index += 1) {
+    const token = repaired[index];
+    if (token.type !== "word") continue;
+
+    if (token.slot === "verb") {
+      const form = contextualVerbForm(repaired, index, token.verbForm);
+      const person = personOf(subjectToken(repaired, index));
+      const lemma = token.lemma || verbLemma(token.normal);
+      if (lemma) setWord(token, inflectVerb(lemma, form, person));
+      token.verbForm = form;
+      continue;
+    }
+
+    if (token.slot === "copula" || token.slot === "auxiliary") {
+      const previous = previousWord(repaired, index);
+      const finite = !previous || (previous.normal !== "to" && previous.slot !== "modal");
+
+      if (!finite) {
+        if (BE_FORMS.test(token.normal)) setWord(token, "be");
+        else if (HAVE_FORMS.test(token.normal)) setWord(token, "have");
+        else if (DO_FORMS.test(token.normal)) setWord(token, "do");
+        continue;
+      }
+
+      if (/^(?:been|being|having|doing|done)$/i.test(token.normal)) continue;
+
+      const person = personOf(subjectToken(repaired, index));
+      const tense = token.verbForm === "past" ? "past" : "present";
+      if (BE_FORMS.test(token.normal)) {
+        setWord(token, BE_TABLE[tense][person] || BE_TABLE[tense].singular);
+      } else if (HAVE_FORMS.test(token.normal)) {
+        setWord(token, tense === "past" ? "had" : person === "singular" ? "has" : "have");
+      } else if (DO_FORMS.test(token.normal)) {
+        setWord(token, tense === "past" ? "did" : person === "singular" ? "does" : "do");
+      }
+    }
+  }
+
+  for (let index = 0; index < repaired.length; index += 1) {
+    const token = repaired[index];
+    if (token.type !== "word") continue;
+    if (token.normal !== "a" && token.normal !== "an") continue;
+
+    const next = nextWord(repaired, index);
+    if (!next) continue;
+    const head = nextHeadNoun(repaired, index);
+    setWord(token, head?.plural
+      ? "the"
+      : startsWithVowelSound(next.normal) ? "an" : "a");
+  }
+
+  return recase(repaired);
+}
+
+function polish(text) {
+  return text
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/([,.;:!?])([^\s"'”’)\]])/g, "$1 $2")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function joinTokens(tokens, preserveLines) {
+  return tokens.map((token) => {
+    if (token.type === "separator") {
+      return preserveLines ? token.value : token.value.replace(/\s+/g, " ");
+    }
+    return token.value;
+  }).join("");
+}
+
+function tokensToText(tokens, preserveLines) {
+  return polish(joinTokens(tokens, preserveLines));
+}
+
+function matchCount(doc, pattern) {
+  const hits = doc.match(pattern);
+  return hits.found ? hits.json().length : 0;
+}
+
+function scoreTokens(tokens, preserveLines) {
+  let score = 0;
+  let last = null;
+
+  for (const token of tokens) {
+    if (token.type !== "word") continue;
+
+    if (last) {
+      if (token.lemma && token.lemma === last.lemma) score -= 6;
+      else if (token.normal === last.normal) score -= 6;
+
+      if (last.slot === "determiner" && (token.slot === "noun" || token.slot === "adjective" || token.slot === "proper")) {
+        score += 2;
+      }
+      if (last.slot === "adjective" && (token.slot === "noun" || token.slot === "proper")) {
+        score += 3;
+      }
+      if (last.slot === "pronoun" && (token.slot === "verb" || token.slot === "copula" || token.slot === "auxiliary")) {
+        score += 3;
+      }
+      if (last.slot === "noun" && (token.slot === "verb" || token.slot === "copula" || token.slot === "auxiliary")) {
+        score += 2;
+      }
+      if (last.slot === "noun" && token.slot === "noun" && !last.possessive) score -= 3;
+    }
+
+    last = token;
+  }
+
+  const doc = nlp(tokensToText(tokens, preserveLines));
+  score += matchCount(doc, "#Determiner (#Adjective|#Adverb)? #Noun") * 2;
+  score += matchCount(doc, "#Adjective #Noun") * 2;
+  score += matchCount(doc, "#Pronoun #Verb") * 2;
+  score -= matchCount(doc, "#Preposition #Preposition") * 8;
+  score -= matchCount(doc, "to #Copula") * 8;
+  score -= matchCount(doc, "#ObjectPronoun (#Verb|#Copula)") * 8;
+  score -= matchCount(doc, "#Modal #Copula") * 8;
+  score -= matchCount(doc, "(this|that) #Plural") * 6;
+  score -= matchCount(doc, "(these|those) #Singular") * 6;
+  score -= matchCount(doc, "(a|an) (#Adjective|#Adverb)? #Plural") * 6;
+
+  return score;
+}
+
+function generate({ scrambleText, referenceText, preserveLines, allowReuse }) {
+  const scramble = normalizeInput(scrambleText, false);
+  const referenceSource = normalizeInput(referenceText, preserveLines);
+
+  if (
+    analyzeCache.scramble !== scramble
+    || analyzeCache.reference !== referenceSource
+    || analyzeCache.preserveLines !== Boolean(preserveLines)
+  ) {
+    analyzeCache = {
+      scramble,
+      reference: referenceSource,
+      preserveLines: Boolean(preserveLines),
+      tokens: analyze(referenceSource),
+      buckets: buildPool(scramble),
+    };
+  }
+
+  const { tokens: reference, buckets } = analyzeCache;
+
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (let draft = 0; draft < DRAFTS; draft += 1) {
+    const tokens = repairTokens(fillDraft(reference, buckets, allowReuse));
+    const score = scoreTokens(tokens, preserveLines);
+    if (score > bestScore) {
+      bestScore = score;
+      best = tokens;
+    }
   }
 
   return {
-    output: polishOutput(parts.join("")),
-    outputTokens,
+    output: tokensToText(best, preserveLines),
+    outputTokens: best.map((token) => {
+      if (token.type === "separator") {
+        return {
+          type: "separator",
+          value: preserveLines ? token.value : token.value.replace(/\s+/g, " "),
+        };
+      }
+      return { type: "word", value: token.value, category: token.slot };
+    }),
   };
 }
 
-async function loadDictionary() {
-  const response = await fetch("dictionary.compact.json", {
-    cache: "force-cache",
+if (typeof importScripts === "function") {
+  self.addEventListener("message", (event) => {
+    if (event.data?.type !== "generate") return;
+    try {
+      postMessage({
+        type: "result",
+        requestId: event.data.requestId,
+        ...generate(event.data),
+      });
+    } catch (error) {
+      postMessage({
+        type: "error",
+        requestId: event.data.requestId,
+        message: error.message,
+      });
+    }
   });
-  if (!response.ok) {
-    throw new Error(`Dictionary request failed (${response.status})`);
-  }
-  const packed = await response.json();
-  const words = packed.w;
-  dictionary = new Map();
-  for (let index = 0; index < words.length; index += 2) {
-    dictionary.set(words[index], words[index + 1]);
-  }
-  postMessage({ type: "ready", entries: dictionary.size });
+
+  postMessage({ type: "ready" });
 }
 
-self.addEventListener("message", (event) => {
-  if (event.data?.type !== "generate" || !dictionary) return;
-  try {
-    postMessage({
-      type: "result",
-      requestId: event.data.requestId,
-      ...generate(event.data),
-    });
-  } catch (error) {
-    postMessage({
-      type: "error",
-      requestId: event.data.requestId,
-      message: error.message,
-    });
-  }
-});
-
-loadDictionary().catch((error) => {
-  postMessage({ type: "load-error", message: error.message });
-});
+if (typeof module === "object" && module.exports) {
+  module.exports = { generate, verbLemma, conjugateVerb, buildPool, analyze, normalizeInput };
+}
